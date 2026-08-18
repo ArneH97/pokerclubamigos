@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Kleuren. De datakleuren (--s1 … --s7, --track) komen uit een gevalideerd
+   palet: elk aangrenzend paar blijft onderscheidbaar voor kleurenblinde
+   lezers, in licht én donker. Niet zomaar wijzigen zonder te hervalideren.
+--------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+
+  --plane: #f7f4ee;
+  --plane-2: #efe9de;
+  --surface: #fcfcfb;
+  --surface-2: #f4f1ea;
+
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-muted: #898781;
+  --line: #e1e0d9;
+  --hairline: rgba(11, 11, 11, 0.1);
+
+  --s1: #2a78d6; /* blauw   — hoofdaccent, pot */
+  --s2: #eb6834; /* oranje  — winst */
+  --s3: #1baf7a; /* aqua    — betaald */
+  --s4: #eda100; /* geel    — cashes */
+  --s5: #e87ba4; /* magenta */
+  --s7: #4a3aa7; /* violet  — leden */
+  --track: #cde2fb; /* lichtere stap van blauw: de lege meter */
+
+  --good: #0ca30c;
+  --good-text: #006300;
+  --warning: #fab219;
+  --critical: #d03b3b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --plane: #0d0d0d;
+    --plane-2: #151514;
+    --surface: #1a1a19;
+    --surface-2: #222220;
+
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-muted: #898781;
+    --line: #2c2c2a;
+    --hairline: rgba(255, 255, 255, 0.1);
+
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --s4: #c98500;
+    --s5: #d55181;
+    --s7: #9085e9;
+    --track: #184f95;
+
+    --good: #0ca30c;
+    --good-text: #0ca30c;
+    --warning: #fab219;
+    --critical: #d03b3b;
+  }
+}
+
+@theme inline {
+  --color-plane: var(--plane);
+  --color-plane-2: var(--plane-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-s1: var(--s1);
+  --color-s2: var(--s2);
+  --color-s3: var(--s3);
+  --color-s4: var(--s4);
+  --color-s5: var(--s5);
+  --color-s7: var(--s7);
+  --color-track: var(--track);
+  --color-good: var(--good);
+  --color-good-text: var(--good-text);
+  --color-warning: var(--warning);
+  --color-critical: var(--critical);
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html {
+  background: var(--plane);
+  color: var(--ink);
+}
+
+/* Vrolijke achtergrond: zachte gekleurde vlekken achter de pagina. */
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+  color: var(--ink);
+  background-attachment: fixed;
+  background-color: var(--plane);
+  background-image:
+    radial-gradient(
+      44rem 44rem at 10% -10%,
+      color-mix(in oklab, var(--s1) 26%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      38rem 38rem at 95% 2%,
+      color-mix(in oklab, var(--s2) 24%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      42rem 42rem at 72% 98%,
+      color-mix(in oklab, var(--s3) 20%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      30rem 30rem at 22% 88%,
+      color-mix(in oklab, var(--s4) 18%, transparent),
+      transparent 68%
+    );
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 1.5rem;
+  box-shadow: 0 1px 2px rgba(11, 11, 11, 0.04);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+input,
+select,
+textarea {
+  color-scheme: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
