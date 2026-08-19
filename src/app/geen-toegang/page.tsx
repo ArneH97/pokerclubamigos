@@ -18,7 +18,7 @@ export default async function GeenToegangPage() {
         </h1>
         <p className="mt-2 text-sm text-ink-2">
           Je account werkt, maar <strong>{user.email}</strong> staat nog niet op
-          de ledenlijst van De Amigo&apos;s. Vraag de voorzitter om je toe te
+          de ledenlijst van De Amigos. Vraag de voorzitter om je toe te
           voegen — daarna zie je meteen alles.
         </p>
 

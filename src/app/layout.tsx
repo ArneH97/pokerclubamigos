@@ -4,7 +4,7 @@ import "@fontsource/caveat/700.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "De Amigo's — pokerclub uit Aalst",
+  title: "De Amigos — pokerclub uit Aalst",
   description:
     "Een groep vrienden uit Aalst die elkaar tegenkwam aan de pokertafel en er nooit meer is weggegaan.",
 };

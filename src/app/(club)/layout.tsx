@@ -73,7 +73,7 @@ export default async function ClubLayout({
       </main>
 
       <footer className="safe-x mx-auto hidden max-w-6xl pb-10 text-xs text-ink-muted md:block">
-        De Amigo&apos;s · Aalst
+        De Amigos · Aalst
       </footer>
 
       <BottomNav unread={unread} />

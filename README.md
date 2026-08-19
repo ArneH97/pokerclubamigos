@@ -1,6 +1,6 @@
-# De Amigo's — clubsite
+# De Amigos — clubsite
 
-Website voor pokerclub De Amigo's uit Aalst. Een publieke startpagina over de
+Website voor pokerclub De Amigos uit Aalst. Een publieke startpagina over de
 club, en daarachter een ledenzone met het prikbord, de spaarpot en het beheer.
 
 Gebouwd met Next.js (App Router) + Supabase, draait op Vercel.
@@ -84,7 +84,7 @@ SMTP aan en vul in:
 | Username | `resend` |
 | Password | je Resend API-sleutel (`re_…`) |
 | Sender email | een adres op je geverifieerde domein, bv. `noreply@jouwdomein.be` |
-| Sender name | `De Amigo's` |
+| Sender name | `De Amigos` |
 
 Let op: het afzenderdomein moet in Resend geverifieerd zijn (Domains → DNS-records
 bij easyhost zetten). Een adres op een niet-geverifieerd domein wordt geweigerd.
@@ -112,7 +112,7 @@ op de juiste pagina landen:
 *Invite user:*
 
 ```html
-<h2>Welkom bij De Amigo's</h2>
+<h2>Welkom bij De Amigos</h2>
 <p>Je bent uitgenodigd voor de ledenzone. Klik hieronder om je spelernaam en
 een wachtwoord te kiezen.</p>
 <p>

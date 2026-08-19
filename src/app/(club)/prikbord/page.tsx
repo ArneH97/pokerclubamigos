@@ -69,7 +69,7 @@ export default async function PrikbordPage() {
             Dag {voornaam}
           </h1>
           <p className="mt-1.5 text-sm text-ink-2">
-            Dit is wat de Amigo&apos;s de laatste tijd hebben uitgespookt.
+            Dit is wat de Amigos de laatste tijd hebben uitgespookt.
           </p>
         </div>
         <Link href="/ingave" className={`${buttonClass} hidden sm:inline-flex`}>

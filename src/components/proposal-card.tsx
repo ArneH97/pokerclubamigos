@@ -95,7 +95,7 @@ export function ProposalCard({
           />
         </div>
         <p className="mt-2 text-xs text-ink-muted tabular">
-          {votes} van {totalMembers} Amigo&apos;s
+          {votes} van {totalMembers} Amigos
         </p>
       </div>
     </article>

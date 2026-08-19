@@ -1,5 +1,5 @@
 -- ============================================================================
---  De Amigo's — uitbreiding 2
+--  De Amigos — uitbreiding 2
 --
 --  Wat hier bijkomt:
 --   · prikbord: likes en reacties op een cash
@@ -357,7 +357,7 @@ grant select on
 -- ============================================================================
 --  Meldingen
 --  Worden door de database zelf aangemaakt, zodat ze nooit vergeten worden:
---   · iemand geeft een nieuwe cash in  -> alle andere Amigo's
+--   · iemand geeft een nieuwe cash in  -> alle andere Amigos
 --   · iemand liket jouw cash           -> jij
 --   · iemand reageert op jouw cash     -> jij, en wie er al reageerde
 -- ============================================================================

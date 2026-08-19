@@ -61,7 +61,7 @@ export default async function SeizoenPage() {
           <CardTitle>Nieuw seizoen starten</CardTitle>
           <p className="mb-4 text-sm text-ink-2">
             Een nieuw seizoen zet het huidige op non-actief en begint met een
-            verse ranglijst. De saldo&apos;s van de Amigo&apos;s blijven gewoon
+            verse ranglijst. De saldo&apos;s van de Amigos blijven gewoon
             staan — die lopen door over de seizoenen heen.
           </p>
           <SeasonForm season={null} />

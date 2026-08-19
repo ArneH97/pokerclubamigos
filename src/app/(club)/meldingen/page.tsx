@@ -66,7 +66,7 @@ export default async function MeldingenPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <PageTitle sub="Wat er ondertussen gebeurd is bij de Amigo's.">
+        <PageTitle sub="Wat er ondertussen gebeurd is bij de Amigos.">
           Meldingen
         </PageTitle>
         {items.length > 0 ? (

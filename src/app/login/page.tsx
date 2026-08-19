@@ -38,7 +38,7 @@ export default async function LoginPage({
       <div className="card p-7 sm:p-8">
         <h1 className="text-xl font-bold text-ink">Ledenzone</h1>
         <p className="mt-1 mb-6 text-sm text-ink-2">
-          Enkel voor leden van De Amigo&apos;s.
+          Enkel voor leden van De Amigos.
         </p>
 
         <LoginForm initialError={foutmelding} />

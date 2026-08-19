@@ -1,5 +1,5 @@
 -- ============================================================================
---  De Amigo's — clubkas & leaderboard
+--  De Amigos — clubkas & leaderboard
 --  Voor een eigen, apart Supabase-project. Alles staat in het standaardschema
 --  "public", dus je hoeft niets extra in te stellen bij Exposed schemas.
 --
@@ -20,7 +20,7 @@ create table if not exists public.members (
 );
 
 comment on table public.members is
-  'Wie lid is van De Amigo''s. Een auth-gebruiker zonder rij hier ziet niets.';
+  'Wie lid is van De Amigos. Een auth-gebruiker zonder rij hier ziet niets.';
 
 -- ---------------------------------------------------------------------------
 --  Seizoenen (spaarjaar met streefbedrag)

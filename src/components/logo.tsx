@@ -1,5 +1,5 @@
 /**
- * Het clubmerk: een rode pokerfiche naast "Amigo's" in handschrift, met een
+ * Het clubmerk: een rode pokerfiche naast "Amigos" in handschrift, met een
  * streep eronder alsof iemand het er snel bij heeft gezet.
  */
 export function Logo({
@@ -54,7 +54,7 @@ export function Logo({
               transformOrigin: "left center",
             }}
           >
-            Amigo&apos;s
+            Amigos
           </span>
 
           {streep ? (

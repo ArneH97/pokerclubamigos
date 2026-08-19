@@ -26,7 +26,7 @@ const WAARDEN = [
   {
     titel: "Loyaliteit",
     tekst:
-      "Amigo's laten elkaar niet vallen. Niet aan de tafel, en al zeker niet ernaast.",
+      "Amigos laten elkaar niet vallen. Niet aan de tafel, en al zeker niet ernaast.",
     tint: "bg-s3/10",
     dot: "bg-s3",
     kantel: "sm:-rotate-1",
@@ -234,7 +234,7 @@ export default async function LandingPage() {
       <footer className="safe-x mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 border-t border-line py-8 text-sm text-ink-muted">
         <span className="flex items-center gap-2">
           <Chip className="h-5 w-5" />
-          De Amigo&apos;s · Aalst
+          De Amigos · Aalst
         </span>
         <Link
           href="/login"
