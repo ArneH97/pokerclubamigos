@@ -91,8 +91,20 @@ bij easyhost zetten). Een adres op een niet-geverifieerd domein wordt geweigerd.
 
 **Daarna, onder Authentication → URL Configuration:**
 
-- **Site URL**: je echte domein, bv. `https://www.deamigos.be`
-- **Redirect URLs**: `https://www.deamigos.be/**` en `http://localhost:3000/**`
+- **Site URL**: precies de URL waar de site draait, bv.
+  `https://pokerclubamigos.vercel.app` of je eigen domein.
+- **Redirect URLs**: voeg élke URL toe waar je de site opent, met `/**` erachter:
+
+  ```
+  https://www.deamigos.be/**
+  https://deamigos.be/**
+  https://pokerclubamigos.vercel.app/**
+  http://localhost:3000/**
+  ```
+
+Staat een adres hier niet bij, dan weigert Supabase de omleiding en zie je
+`{"error":"requested path is invalid"}` op een supabase.co-pagina. Dat is dus
+geen fout van de site zelf.
 
 **En onder Authentication → Emails** twee sjablonen aanpassen, zodat de links
 op de juiste pagina landen:
@@ -120,6 +132,9 @@ een wachtwoord te kiezen.</p>
   </a>
 </p>
 ```
+
+Laat je de standaardsjablonen staan, dan werkt het ook: de app vangt die vorm
+op via `/auth/hash`. De sjablonen hierboven zijn wel netter en betrouwbaarder.
 
 Komt een uitnodiging toch niet aan, dan kan je bij **Beheer → Leden** kiezen
 voor een startwachtwoord dat je zelf doorstuurt.

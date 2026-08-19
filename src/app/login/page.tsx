@@ -14,12 +14,17 @@ const FOUTEN: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ fout?: string }>;
+  searchParams: Promise<{ fout?: string; melding?: string }>;
 }) {
   const { member } = await getMember();
   if (member) redirect("/prikbord");
 
-  const { fout } = await searchParams;
+  const { fout, melding } = await searchParams;
+  const foutmelding = fout
+    ? melding
+      ? `${FOUTEN[fout] ?? "Er ging iets mis."} (${melding})`
+      : FOUTEN[fout]
+    : undefined;
 
   return (
     <main className="safe-x mx-auto flex min-h-dvh max-w-md flex-col justify-center py-10">
@@ -33,7 +38,7 @@ export default async function LoginPage({
           Enkel voor leden van De Amigo&apos;s.
         </p>
 
-        <LoginForm initialError={fout ? FOUTEN[fout] : undefined} />
+        <LoginForm initialError={foutmelding} />
 
         <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-ink-muted">
           Nog geen toegang? Arne of Guido nodigen je uit per e-mail.
