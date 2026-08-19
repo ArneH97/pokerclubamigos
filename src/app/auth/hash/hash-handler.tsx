@@ -6,16 +6,30 @@ import { useEffect, useState } from "react";
 import { Notice, buttonGhostClass } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 
+/** Waar iemand hoort te landen, afhankelijk van het soort mail. */
+function bestemming(type: string | null) {
+  if (type === "invite" || type === "signup") return "/welkom";
+  if (type === "recovery") return "/wachtwoord";
+  return "/prikbord";
+}
+
+function leesbaar(code: string | null, omschrijving: string | null) {
+  if (code === "otp_expired") {
+    return "Deze link is verlopen of werd al gebruikt. Elke uitnodiging werkt maar één keer.";
+  }
+  if (omschrijving) return omschrijving.replace(/\+/g, " ");
+  return "Deze link werkt niet meer.";
+}
+
 /**
- * Vangt het geval waarin Supabase de sessie in het anker van de URL zet
- * (#access_token=…). Een server ziet dat stuk nooit, dus doet de browser het.
+ * Vangt het geval waarin Supabase de sessie of een fout in het anker van de
+ * URL zet (#access_token=… of #error=…). Een server ziet dat stuk nooit.
  */
 export function HashHandler() {
   const params = useSearchParams();
   const [fout, setFout] = useState<string | null>(null);
 
-  const next = params.get("next") ?? "/prikbord";
-  const safeNext = next.startsWith("/") ? next : "/prikbord";
+  const nextParam = params.get("next");
 
   useEffect(() => {
     let actief = true;
@@ -23,8 +37,12 @@ export function HashHandler() {
     const afhandelen = async (): Promise<string | null> => {
       const velden = new URLSearchParams(window.location.hash.replace(/^#/, ""));
 
-      const melding = velden.get("error_description") ?? velden.get("error");
-      if (melding) return melding.replace(/\+/g, " ");
+      if (velden.has("error") || velden.has("error_code")) {
+        return leesbaar(
+          velden.get("error_code"),
+          velden.get("error_description"),
+        );
+      }
 
       const accessToken = velden.get("access_token");
       const refreshToken = velden.get("refresh_token");
@@ -39,7 +57,12 @@ export function HashHandler() {
       });
       if (error) return error.message;
 
-      window.location.replace(safeNext);
+      const doel =
+        nextParam && nextParam.startsWith("/")
+          ? nextParam
+          : bestemming(velden.get("type"));
+
+      window.location.replace(doel);
       return null;
     };
 
@@ -50,7 +73,7 @@ export function HashHandler() {
     return () => {
       actief = false;
     };
-  }, [safeNext]);
+  }, [nextParam]);
 
   if (fout) {
     return (
@@ -60,8 +83,8 @@ export function HashHandler() {
           <Notice tone="error">{fout}</Notice>
         </div>
         <p className="mt-4 text-sm text-ink-2">
-          Vraag Arne of Guido om je opnieuw uit te nodigen, of om een nieuw
-          wachtwoord voor je klaar te zetten.
+          Vraag Arne of Guido om je opnieuw uit te nodigen, of om een
+          startwachtwoord voor je klaar te zetten.
         </p>
         <Link href="/login" className={`${buttonGhostClass} mt-5`}>
           Naar het inlogscherm

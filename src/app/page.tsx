@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AuthHashRedirect } from "@/components/auth-hash-redirect";
 import { Chip, Logo, Spade } from "@/components/logo";
 import { getMember } from "@/lib/session";
 
@@ -52,6 +53,7 @@ export default async function LandingPage() {
 
   return (
     <div className="min-h-dvh overflow-x-hidden">
+      <AuthHashRedirect />
       <header className="safe-x mx-auto flex max-w-5xl items-center justify-between py-5">
         <Logo size="sm" />
         <Link

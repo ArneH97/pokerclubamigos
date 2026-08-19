@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "./login-form";
+import { AuthHashRedirect } from "@/components/auth-hash-redirect";
 import { Logo } from "@/components/logo";
 import { getMember } from "@/lib/session";
 
@@ -28,6 +29,8 @@ export default async function LoginPage({
 
   return (
     <main className="safe-x mx-auto flex min-h-dvh max-w-md flex-col justify-center py-10">
+      <AuthHashRedirect />
+
       <Link href="/" className="mb-8 self-start">
         <Logo size="md" />
       </Link>
