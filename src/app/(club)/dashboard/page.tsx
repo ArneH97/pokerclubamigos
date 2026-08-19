@@ -91,9 +91,9 @@ export default async function DashboardPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile
-          label="Jij stort straks"
+          label="Jij geeft nog door"
           value={money(num(mine?.openstaand))}
-          detail="Afrekening op het einde van het seizoen"
+          detail="Zit al in de pot, moet nog bij Guido geraken"
           accent="s3"
         />
         <StatTile
@@ -105,9 +105,9 @@ export default async function DashboardPage() {
           accent="s1"
         />
         <StatTile
-          label="Al gestort"
-          value={money(num(mine?.gestort))}
-          detail="Zit al in de kas"
+          label="Al afgerekend"
+          value={money(num(mine?.ontvangen))}
+          detail="Dat geld is al doorgegeven"
           accent="s2"
         />
         <StatTile

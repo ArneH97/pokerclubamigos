@@ -56,7 +56,7 @@ export default async function FinancienPage() {
 
   return (
     <>
-      <PageTitle sub="Eén pot. Het aandeel per Amigo dient enkel om te beschermen wie niet meegaat naar een activiteit.">
+      <PageTitle sub="Eén pot. Een bijdrage telt mee zodra ze ingegeven is; of het geld al bij jou geraakt is, hou je er los van bij.">
         Financiën
       </PageTitle>
 
@@ -64,20 +64,20 @@ export default async function FinancienPage() {
         <StatTile
           label="In de pot"
           value={money(num(totals.pot))}
-          detail="Wat er nu effectief in de kas zit"
+          detail="Alle bijdragen samen, betaald of niet"
           accent="s1"
         />
         <StatTile
-          label="Nog te storten"
-          value={money(num(totals.openstaand))}
-          detail="Bijdragen die nog niet betaald zijn"
-          accent="s2"
+          label="Al binnen"
+          value={money(num(totals.pot) - num(totals.openstaand))}
+          detail="Geld dat effectief bij jou zit"
+          accent="s3"
         />
         <StatTile
-          label="Samen straks"
-          value={money(num(totals.pot_verwacht))}
-          detail="Pot plus wat er nog binnenkomt"
-          accent="s3"
+          label="Nog te ontvangen"
+          value={money(num(totals.openstaand))}
+          detail="Moet nog fysiek doorgegeven worden"
+          accent="s2"
         />
         <StatTile
           label="Actieve leden"
@@ -97,7 +97,7 @@ export default async function FinancienPage() {
             <Notice>
               Hier neem je de Excel over: typ per Amigo wat er nu voor hem in het
               potje zit en klik <strong>zet</strong>. Verder loopt het vanzelf —
-              elke gestorte bijdrage komt erbij, elke activiteit gaat eraf.
+              elke ingegeven bijdrage komt erbij, elke activiteit gaat eraf.
             </Notice>
           </div>
 
@@ -113,10 +113,10 @@ export default async function FinancienPage() {
                       Aandeel in de pot
                     </th>
                     <th scope="col" className="whitespace-nowrap py-2 pr-3 text-right font-medium">
-                      Nog te storten
+                      Nog te ontvangen
                     </th>
                     <th scope="col" className="whitespace-nowrap py-2 pr-3 text-right font-medium">
-                      Al gestort
+                      Al ontvangen
                     </th>
                     <th scope="col" className="whitespace-nowrap py-2 pr-3 text-right font-medium">
                       Verbruikt
@@ -142,7 +142,7 @@ export default async function FinancienPage() {
                         {money(m.openstaand)}
                       </td>
                       <td className="whitespace-nowrap py-3 pr-3 text-right text-ink-2 tabular">
-                        {money(m.gestort)}
+                        {money(m.ontvangen)}
                       </td>
                       <td className="whitespace-nowrap py-3 pr-3 text-right text-ink-2 tabular">
                         {money(m.verbruikt)}
@@ -153,7 +153,7 @@ export default async function FinancienPage() {
                             <input type="hidden" name="member_id" value={m.member_id} />
                             <input type="hidden" name="season_id" value={season.id} />
                             <button className="whitespace-nowrap rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-surface-2">
-                              heeft gestort
+                              heb ik ontvangen
                             </button>
                           </form>
                         ) : (
@@ -256,7 +256,7 @@ export default async function FinancienPage() {
                                 value={r.is_paid ? "false" : "true"}
                               />
                               <button className="whitespace-nowrap rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-surface-2">
-                                {r.is_paid ? "gestort · maak open" : "open · vink af"}
+                                {r.is_paid ? "ontvangen · maak open" : "open · vink af"}
                               </button>
                             </form>
                             <form action={adminDeleteResultAction}>

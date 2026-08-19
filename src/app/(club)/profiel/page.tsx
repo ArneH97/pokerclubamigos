@@ -38,14 +38,14 @@ export default async function ProfielPage() {
                 d: "Alles wat jij al in de pot stak",
               },
               {
-                k: "Nog te storten",
+                k: "Nog door te geven",
                 v: money(num(ledger?.openstaand)),
-                d: "Afrekening op het einde van het seizoen",
+                d: "Zit al in de pot, maar nog niet bij Guido",
               },
               {
-                k: "Al gestort",
-                v: money(num(ledger?.gestort)),
-                d: "Dat zit al in de kas",
+                k: "Al afgerekend",
+                v: money(num(ledger?.ontvangen)),
+                d: "Dat geld is al doorgegeven",
               },
             ].map((item) => (
               <div key={item.k} className="bg-surface px-4 py-4">

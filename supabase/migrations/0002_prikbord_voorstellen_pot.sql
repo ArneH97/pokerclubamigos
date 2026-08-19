@@ -212,9 +212,10 @@ create policy votes_delete_own on public.proposal_votes
 --  Views
 -- ---------------------------------------------------------------------------
 
--- Per Amigo: zijn aandeel in de pot en wat hij nog moet storten.
--- Het aandeel dient enkel om te beschermen wie niet meegaat naar een
--- activiteit; naar de leden toe is het gewoon één pot.
+-- Per Amigo: zijn aandeel in de pot.
+-- Een bijdrage telt mee zodra ze ingegeven is — of het geld al bij Guido
+-- geraakt is of niet verandert daar niets aan. 'openstaand' is enkel een
+-- lijstje voor Guido van wat hij nog moet ontvangen.
 drop view if exists public.member_ledger;
 create view public.member_ledger
 with (security_invoker = on) as
@@ -225,7 +226,7 @@ select
   m.is_active,
   m.role,
   coalesce((select sum(r.contribution) from public.results r
-            where r.member_id = m.id and r.is_paid), 0)              as gestort,
+            where r.member_id = m.id and r.is_paid), 0)              as ontvangen,
   coalesce((select sum(r.contribution) from public.results r
             where r.member_id = m.id and not r.is_paid), 0)          as openstaand,
   coalesce((select sum(r.contribution) from public.results r
@@ -236,7 +237,7 @@ select
             where c.member_id = m.id), 0)                            as verbruikt,
   greatest(
     coalesce((select sum(r.contribution) from public.results r
-              where r.member_id = m.id and r.is_paid), 0)
+              where r.member_id = m.id), 0)
     + coalesce((select sum(a.amount) from public.member_adjustments a
               where a.member_id = m.id), 0)
     - coalesce((select sum(c.amount) from public.activity_charges c
@@ -244,15 +245,16 @@ select
     0)                                                               as aandeel
 from public.members m;
 
--- De pot: de som van alle aandelen.
+-- De pot: de som van alle aandelen. 'openstaand' zegt enkel hoeveel daarvan
+-- nog fysiek bij Guido moet geraken.
 drop view if exists public.club_totals;
 create view public.club_totals
 with (security_invoker = on) as
 select
-  coalesce(sum(l.aandeel), 0)                                   as pot,
-  coalesce(sum(l.openstaand), 0)                                as openstaand,
-  coalesce(sum(l.aandeel), 0) + coalesce(sum(l.openstaand), 0)  as pot_verwacht,
-  count(*) filter (where l.is_active)::int                      as leden
+  coalesce(sum(l.aandeel), 0)              as pot,
+  coalesce(sum(l.openstaand), 0)           as openstaand,
+  coalesce(sum(l.ontvangen), 0)            as ontvangen,
+  count(*) filter (where l.is_active)::int as leden
 from public.member_ledger l;
 
 -- Per seizoen: hoeveel er dit jaar is bijgedragen.
@@ -270,7 +272,7 @@ select
                   as contributions,
   coalesce((select sum(r.contribution) from public.results r
             where r.season_id = s.id and r.is_paid), 0)
-                  as contributions_paid,
+                  as contributions_received,
   coalesce((select sum(r.profit) from public.results r where r.season_id = s.id), 0)
                   as profit,
   (select count(*) from public.results r where r.season_id = s.id)::int

@@ -47,3 +47,6 @@ next-env.d.ts
 # door next dev gegenereerd
 AGENTS.md
 CLAUDE.md
+
+# overdrachtsmap — hoort niet in de repo
+_transfer/

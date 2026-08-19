@@ -62,7 +62,7 @@ export type SeasonTotals = {
   ends_on: string;
   is_active: boolean;
   contributions: number;
-  contributions_paid: number;
+  contributions_received: number;
   profit: number;
   entries: number;
   contributors: number;
@@ -71,7 +71,7 @@ export type SeasonTotals = {
 export type ClubTotals = {
   pot: number;
   openstaand: number;
-  pot_verwacht: number;
+  ontvangen: number;
   leden: number;
 };
 
@@ -81,7 +81,7 @@ export type MemberLedger = {
   full_name: string;
   is_active: boolean;
   role: Role;
-  gestort: number;
+  ontvangen: number;
   openstaand: number;
   bijgedragen: number;
   correcties: number;

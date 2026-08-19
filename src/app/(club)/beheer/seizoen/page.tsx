@@ -35,9 +35,9 @@ export default async function SeizoenPage() {
             accent="s1"
           />
           <StatTile
-            label="Waarvan gestort"
-            value={money(num(totals?.contributions_paid))}
-            detail="De rest volgt bij de afrekening"
+            label="Waarvan ontvangen"
+            value={money(num(totals?.contributions_received))}
+            detail="De rest moet nog doorgegeven worden"
             accent="s3"
           />
           <StatTile

@@ -38,9 +38,9 @@ export default async function BeheerIngavePage() {
 
       <div className="mt-5">
         <Notice>
-          Gebruik dit om de cashes van vóór de site in te halen. Vink
-          &apos;zit al in de kas&apos; aan als dat geld al betaald is — anders
-          komt het bij het openstaande bedrag van dat lid.
+          Gebruik dit om de cashes van vóór de site in te halen. De bijdrage
+          telt meteen mee voor de pot; vink enkel aan of je het geld al
+          ontvangen hebt.
         </Notice>
       </div>
     </div>

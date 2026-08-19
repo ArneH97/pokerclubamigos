@@ -57,7 +57,7 @@ export async function getSeasonTotals(seasonId: string) {
   return (data as SeasonTotals | null) ?? null;
 }
 
-/** De pot: de som van alle saldo's, plus wat er nog gestort moet worden. */
+/** De pot: de som van alle aandelen. Betaald of niet verandert daar niets aan. */
 export async function getClubTotals() {
   const supabase = await createClient();
   const { data } = await supabase.from("club_totals").select("*").maybeSingle();
@@ -65,7 +65,7 @@ export async function getClubTotals() {
     (data as ClubTotals | null) ?? {
       pot: 0,
       openstaand: 0,
-      pot_verwacht: 0,
+      ontvangen: 0,
       leden: 0,
     }
   );

@@ -13,9 +13,9 @@ export function PotMeter({
   target,
   seasonName,
 }: {
-  /** Wat er effectief in de kas zit: de som van alle saldo's. */
+  /** De volledige pot: elke bijdrage telt mee, betaald of niet. */
   pot: number;
-  /** Bijdragen die nog gestort moeten worden. */
+  /** Het deel daarvan dat nog fysiek bij de kassier moet geraken. */
   pending: number;
   target: number;
   seasonName: string;
@@ -86,15 +86,15 @@ export function PotMeter({
 
       <div className="grid grid-cols-2 gap-px border-t border-line bg-line">
         <div className="bg-surface px-6 py-4">
-          <p className="text-xs text-ink-muted">Nog te storten door de leden</p>
+          <p className="text-xs text-ink-muted">Al binnen bij de kassier</p>
           <p className="mt-0.5 text-lg font-semibold text-ink">
-            {money(pending)}
+            {money(Math.max(pot - pending, 0))}
           </p>
         </div>
         <div className="bg-surface px-6 py-4">
-          <p className="text-xs text-ink-muted">Samen straks</p>
+          <p className="text-xs text-ink-muted">Nog te ontvangen</p>
           <p className="mt-0.5 text-lg font-semibold text-ink">
-            {money(pot + pending)}
+            {money(pending)}
           </p>
         </div>
       </div>

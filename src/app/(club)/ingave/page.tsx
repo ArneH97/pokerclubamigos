@@ -11,7 +11,7 @@ export default async function IngavePage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageTitle sub="De site rekent zelf 10% van je winst af voor de pot. Betalen doe je niet nu.">
+      <PageTitle sub="De site rekent zelf 10% van je winst af en telt die meteen bij de pot.">
         Resultaat ingeven
       </PageTitle>
 
@@ -29,14 +29,14 @@ export default async function IngavePage() {
 
       <div className="mt-5 space-y-3">
         <Notice>
-          <strong>Je hoeft nu niets te storten.</strong> Alles wordt bijgehouden
-          en op het einde van het seizoen krijg je één afrekening met wat er van
-          jou in de pot hoort. Dat bedrag stort je dan in één keer.
+          <strong>Je bijdrage staat meteen in de pot.</strong> Het geld zelf
+          geef je door wanneer het uitkomt — vaak bij een etentje. Guido vinkt
+          dan af dat hij het ontvangen heeft; de pot verandert daar niet van.
         </Notice>
         <Notice>
           Een fout ingegeven? Je kan je eigen ingave verwijderen op het
-          prikbord, zolang ze nog niet als betaald staat. De beheerder kan alles
-          corrigeren.
+          prikbord, zolang Guido het geld nog niet afgevinkt heeft. De beheerder
+          kan alles corrigeren.
         </Notice>
       </div>
     </div>

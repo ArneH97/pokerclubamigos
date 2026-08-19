@@ -570,7 +570,7 @@ export function RetroResultForm({
           className="h-4 w-4 accent-[var(--s3)]"
         />
         <span className="text-sm text-ink-2">
-          Dit geld zit al in de kas — meteen als gestort markeren
+          Dit geld heb ik al ontvangen
         </span>
       </label>
 

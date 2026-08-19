@@ -12,6 +12,11 @@ Gebouwd met Next.js (App Router) + Supabase, draait op Vercel.
 **Het is één pot.** Dat is wat de leden zien: één bedrag tegenover het
 spaardoel. Niemand heeft een eigen rekening, niemand kan in het rood staan.
 
+**Een bijdrage telt mee zodra ze ingegeven is.** Of het geld al bij Guido
+geraakt is, maakt voor de pot niets uit. Dat wordt apart bijgehouden: hij ziet
+per Amigo wat hij nog moet ontvangen en vinkt af wanneer het binnen is. Vaak
+gebeurt dat bij een etentje, en dat hoeft de pot niet te doen schommelen.
+
 Achter de schermen houdt de site wel bij hoeveel elke Amigo al in de pot heeft
 gestoken — zijn **aandeel**. Dat dient maar voor één ding: beschermen wie niet
 meegaat naar een activiteit.
@@ -25,22 +30,16 @@ verdeeld zit, maakt niet uit — het is één pot.
 Zit er bij de aanwezigen samen te weinig, dan haalt de site eruit wat er is en
 meldt ze hoeveel er van buiten de pot bij moest.
 
-Naast het aandeel is er per Amigo nog **nog te storten**: bijdragen uit cashes
-die nog niet betaald zijn. Betalen gebeurt niet meteen — op het einde van het
-seizoen krijgt iedereen zijn afrekening en stort hij in één keer. Zodra dat
-gebeurd is vink je dat af bij Financiën, en komt het geld in de pot.
-
 ### De Excel van Guido overzetten
 
 Ga naar **Beheer → Financiën**. Daar staat elke Amigo met een invulveldje.
 Typ per speler wat er nu voor hem in het potje zit en klik **zet**. Klaar.
-Vanaf dan loopt het vanzelf: elke gestorte bijdrage komt erbij, elke activiteit
+Vanaf dan loopt het vanzelf: elke ingegeven bijdrage komt erbij, elke activiteit
 gaat eraf.
 
 Wil je ook de oude cashes zelf in de site (voor de ranglijst en het prikbord),
-gebruik dan **Beheer → Cash toevoegen** met *&apos;zit al in de kas&apos;*
-aangevinkt — maar zet dan het aandeel van die speler niet óók handmatig, anders
-telt hetzelfde geld dubbel.
+gebruik dan **Beheer → Cash toevoegen** — maar zet dan het aandeel van die
+speler niet óók handmatig, anders telt hetzelfde geld dubbel.
 
 ---
 
@@ -188,7 +187,7 @@ naam kan niet — de database blokkeert dat.
 Beheerders wisselen bovenaan tussen **Lid** en **Beheer**.
 
 - **Financiën** — de pot, het aandeel per Amigo (rechtstreeks aanpasbaar), wie
-  nog moet storten, en elke ingave corrigeren of verwijderen.
+  nog geld moet doorgeven, en elke ingave corrigeren of verwijderen.
 - **Leden** — toevoegen, rol wisselen, op non-actief zetten, wachtwoord
   resetten, verwijderen.
 - **Activiteiten** — een etentje of uitstap vastleggen. Je duidt aan wie erbij
