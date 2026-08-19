@@ -603,3 +603,169 @@ export async function deleteProposalAction(formData: FormData) {
   await supabase.from("proposals").delete().eq("id", id);
   refresh();
 }
+
+// ---------------------------------------------------------------------------
+//  Startwachtwoorden in bulk
+// ---------------------------------------------------------------------------
+
+export type BulkRegel = { naam: string; email: string; wachtwoord: string };
+export type BulkState = { error?: string; regels?: BulkRegel[] } | null;
+
+/**
+ * Zet in één keer een startwachtwoord klaar voor iedereen die nog niet
+ * binnen is geraakt — handig wanneer uitnodigingsmails onderweg sneuvelen.
+ * "Nog niet binnen" = nog geen spelernaam gekozen.
+ */
+export async function bulkStartPasswordsAction(
+  _prev: BulkState,
+  formData: FormData,
+): Promise<BulkState> {
+  await requireAdmin();
+  const bereik = String(formData.get("bereik") ?? "nieuw");
+
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return {
+      error:
+        "SUPABASE_SERVICE_ROLE_KEY ontbreekt bij de omgevingsvariabelen. Zonder die sleutel lukt dit niet.",
+    };
+  }
+
+  const supabase = await createClient();
+  let query = supabase
+    .from("members")
+    .select("id, email, full_name, nickname, role")
+    .eq("is_active", true)
+    .order("full_name");
+
+  if (bereik === "nieuw") {
+    query = query.or("nickname.is.null,nickname.eq.");
+  }
+
+  const { data, error } = await query;
+  if (error) return { error: error.message };
+
+  const leden = (data ?? []) as {
+    id: string;
+    email: string;
+    full_name: string;
+    nickname: string | null;
+  }[];
+
+  if (leden.length === 0) {
+    return {
+      error:
+        "Er is niemand die nog een startwachtwoord nodig heeft. Iedereen heeft al een spelernaam gekozen.",
+    };
+  }
+
+  const regels: BulkRegel[] = [];
+
+  for (const lid of leden) {
+    const wachtwoord = tempPassword();
+    const { error: pwError } = await admin.auth.admin.updateUserById(lid.id, {
+      password: wachtwoord,
+      email_confirm: true,
+    });
+    if (pwError) continue;
+    regels.push({
+      naam: lid.nickname?.trim() || lid.full_name,
+      email: lid.email,
+      wachtwoord,
+    });
+  }
+
+  if (regels.length === 0) {
+    return { error: "Er kon voor niemand een wachtwoord ingesteld worden." };
+  }
+
+  refresh();
+  return { regels };
+}
+
+// ---------------------------------------------------------------------------
+//  Mail opnieuw versturen
+// ---------------------------------------------------------------------------
+
+/**
+ * Stuurt een nieuwe aanmeldmail. We gebruiken bewust de herstelmail en niet
+ * de uitnodiging: een uitnodiging kan maar één keer verstuurd worden, een
+ * herstelmail zo vaak als nodig — ook voor iemand die nog nooit een
+ * wachtwoord instelde.
+ */
+export async function resendInviteAction(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!email) return { error: "Geen e-mailadres bekend voor dit lid." };
+
+  const supabase = await createClient();
+  const siteUrl = await getSiteUrl();
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteUrl}/uitnodiging?next=/wachtwoord`,
+  });
+
+  if (error) return { error: `Versturen lukte niet: ${error.message}` };
+  return { success: `Mail onderweg naar ${email}.` };
+}
+
+/** Dezelfde mail, maar in één keer naar iedereen die nog niet binnen is. */
+export async function bulkResendAction(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const bereik = String(formData.get("bereik") ?? "nieuw");
+
+  const supabase = await createClient();
+  const siteUrl = await getSiteUrl();
+
+  let query = supabase
+    .from("members")
+    .select("email, full_name, nickname")
+    .eq("is_active", true)
+    .order("full_name");
+
+  if (bereik === "nieuw") query = query.or("nickname.is.null,nickname.eq.");
+
+  const { data, error } = await query;
+  if (error) return { error: error.message };
+
+  const leden = (data ?? []) as { email: string }[];
+  if (leden.length === 0) {
+    return { error: "Er is niemand die nog een mail nodig heeft." };
+  }
+
+  let gelukt = 0;
+  const mislukt: string[] = [];
+
+  for (const lid of leden) {
+    const { error: mailError } = await supabase.auth.resetPasswordForEmail(
+      lid.email,
+      { redirectTo: `${siteUrl}/uitnodiging?next=/wachtwoord` },
+    );
+    if (mailError) mislukt.push(lid.email);
+    else gelukt++;
+  }
+
+  refresh();
+
+  if (gelukt === 0) {
+    return {
+      error: `Geen enkele mail vertrok. Controleer de SMTP-instellingen in Supabase. (${mislukt[0] ?? ""})`,
+    };
+  }
+
+  return {
+    success:
+      mislukt.length === 0
+        ? `${gelukt} mail${gelukt === 1 ? "" : "s"} verstuurd.`
+        : `${gelukt} verstuurd, ${mislukt.length} mislukt: ${mislukt.join(", ")}. Vaak is dat de uurlimiet van Supabase — probeer die straks opnieuw.`,
+  };
+}

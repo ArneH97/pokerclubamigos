@@ -1,18 +1,60 @@
 import { setMemberActiveAction, setMemberRoleAction } from "../actions";
-import { DeleteMemberButton, MemberForm, ResetPasswordButton } from "../forms";
+import {
+  BulkPasswordsForm,
+  BulkResendForm,
+  DeleteMemberButton,
+  MemberForm,
+  ResendInviteButton,
+  ResetPasswordButton,
+} from "../forms";
+import {
+  StatusChip,
+  bepaalStatus,
+  type LidStatus,
+} from "@/components/member-status";
 import { Card, CardTitle, Empty, Notice, PageTitle } from "@/components/ui";
+import { shortDate } from "@/lib/format";
 import { requireAdmin } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import type { Member } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+type AuthStatus = {
+  member_id: string;
+  last_sign_in_at: string | null;
+  email_confirmed_at: string | null;
+  invited_at: string | null;
+  created_at: string | null;
+};
+
 export default async function LedenPage() {
   const { member: me } = await requireAdmin();
   const supabase = await createClient();
 
-  const { data } = await supabase.from("members").select("*").order("full_name");
+  const [{ data }, { data: authData }] = await Promise.all([
+    supabase.from("members").select("*").order("full_name"),
+    supabase.rpc("member_auth_status"),
+  ]);
+
   const members = (data ?? []) as Member[];
+  const aanmeldingen = new Map(
+    ((authData ?? []) as AuthStatus[]).map((r) => [r.member_id, r]),
+  );
+
+  const statusVan = (m: Member): LidStatus =>
+    bepaalStatus({
+      heeftNickname: Boolean(m.nickname?.trim()),
+      laatsteAanmelding: aanmeldingen.get(m.id)?.last_sign_in_at ?? null,
+    });
+
+  const telling = members.reduce(
+    (acc, m) => {
+      acc[statusVan(m)] += 1;
+      return acc;
+    },
+    { actief: 0, aangemeld: 0, uitgenodigd: 0 } as Record<LidStatus, number>,
+  );
 
   return (
     <>
@@ -34,7 +76,41 @@ export default async function LedenPage() {
 
       <div className="mt-6">
         <Card>
-          <CardTitle>Ledenlijst</CardTitle>
+          <CardTitle hint="Voor wie er nog niet in geraakt">
+            Iedereen binnen krijgen
+          </CardTitle>
+
+          <div className="rounded-2xl border border-line p-4">
+            <p className="text-sm font-semibold text-ink">
+              1. Stuur de mail opnieuw
+            </p>
+            <p className="mb-4 mt-1 text-sm text-ink-2">
+              Iedereen krijgt een verse link waarmee hij een wachtwoord kiest.
+              Dit mag je zo vaak herhalen als nodig.
+            </p>
+            <BulkResendForm />
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-line p-4">
+            <p className="text-sm font-semibold text-ink">
+              2. Of geef een startwachtwoord mee
+            </p>
+            <p className="mb-4 mt-1 text-sm text-ink-2">
+              Werkt de mail niet? Zet dan startwachtwoorden klaar en stuur die
+              via WhatsApp door. Geen enkele link die kan sneuvelen.
+            </p>
+            <BulkPasswordsForm />
+          </div>
+        </Card>
+      </div>
+
+      <div className="mt-6">
+        <Card>
+          <CardTitle
+            hint={`${telling.actief} actief · ${telling.aangemeld} half · ${telling.uitgenodigd} wacht nog`}
+          >
+            Ledenlijst
+          </CardTitle>
           {members.length === 0 ? (
             <Empty>Nog geen leden.</Empty>
           ) : (
@@ -60,6 +136,18 @@ export default async function LedenPage() {
                     >
                       {m.role === "admin" ? "beheerder" : "lid"}
                     </span>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <StatusChip status={statusVan(m)} />
+                    {aanmeldingen.get(m.id)?.last_sign_in_at ? (
+                      <span className="text-[11px] text-ink-muted">
+                        laatst binnen{" "}
+                        {shortDate(
+                          aanmeldingen.get(m.id)!.last_sign_in_at!.slice(0, 10),
+                        )}
+                      </span>
+                    ) : null}
                   </div>
 
                   {m.id === me.id ? (
@@ -88,6 +176,7 @@ export default async function LedenPage() {
                           {m.is_active ? "op non-actief" : "opnieuw actief"}
                         </button>
                       </form>
+                      <ResendInviteButton email={m.email} />
                       <ResetPasswordButton
                         id={m.id}
                         name={m.nickname?.trim() || m.full_name}
@@ -112,6 +201,7 @@ export default async function LedenPage() {
                     <th scope="col" className="py-2 pr-3 font-medium">E-mail</th>
                     <th scope="col" className="py-2 pr-3 font-medium">Rol</th>
                     <th scope="col" className="py-2 pr-3 font-medium">Status</th>
+                    <th scope="col" className="py-2 pr-3 font-medium">Actief</th>
                     <th scope="col" className="py-2 font-medium">Toegang</th>
                   </tr>
                 </thead>
@@ -147,6 +237,17 @@ export default async function LedenPage() {
                         )}
                       </td>
                       <td className="py-3 pr-3">
+                        <StatusChip status={statusVan(m)} />
+                        {aanmeldingen.get(m.id)?.last_sign_in_at ? (
+                          <span className="mt-1 block text-[11px] text-ink-muted">
+                            laatst binnen{" "}
+                            {shortDate(
+                              aanmeldingen.get(m.id)!.last_sign_in_at!.slice(0, 10),
+                            )}
+                          </span>
+                        ) : null}
+                      </td>
+                      <td className="py-3 pr-3">
                         {m.id === me.id ? (
                           <span className="text-xs text-ink-2">actief</span>
                         ) : (
@@ -168,6 +269,7 @@ export default async function LedenPage() {
                           <span className="text-xs text-ink-muted">—</span>
                         ) : (
                           <div className="space-y-2">
+                            <ResendInviteButton email={m.email} />
                             <ResetPasswordButton
                               id={m.id}
                               name={m.nickname?.trim() || m.full_name}

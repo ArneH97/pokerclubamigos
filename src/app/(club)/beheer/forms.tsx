@@ -4,14 +4,18 @@ import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   adminAddResultAction,
+  bulkResendAction,
+  bulkStartPasswordsAction,
   createActivityAction,
   createMemberAction,
   createProposalAction,
   deleteMemberAction,
+  resendInviteAction,
   resetMemberPasswordAction,
   saveSeasonAction,
   setMemberShareAction,
   type AdminFormState,
+  type BulkState,
 } from "./actions";
 import { Field, Notice, buttonClass, inputClass } from "@/components/ui";
 import { money } from "@/lib/format";
@@ -628,5 +632,124 @@ export function ProposalForm({ seasonId }: { seasonId: string }) {
 
       <Submit label="Voorstel klaarzetten" />
     </form>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Startwachtwoorden in bulk                                                  */
+/* -------------------------------------------------------------------------- */
+
+export function BulkPasswordsForm() {
+  const [state, action] = useActionState<BulkState, FormData>(
+    bulkStartPasswordsAction,
+    null,
+  );
+  const [gekopieerd, setGekopieerd] = useState(false);
+
+  const tekst = (state?.regels ?? [])
+    .map((r) => `${r.naam} — ${r.email} — wachtwoord: ${r.wachtwoord}`)
+    .join("\n");
+
+  return (
+    <div className="space-y-4">
+      {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
+
+      <form action={action} className="flex flex-wrap items-end gap-3">
+        <Field label="Voor wie?">
+          <select className={inputClass} name="bereik" defaultValue="nieuw">
+            <option value="nieuw">Wie nog geen spelernaam koos</option>
+            <option value="iedereen">Iedereen (ook wie al binnen is)</option>
+          </select>
+        </Field>
+        <Submit label="Startwachtwoorden klaarzetten" />
+      </form>
+
+      {state?.regels?.length ? (
+        <div className="rounded-2xl border border-good/40 bg-good/8 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-ink">
+              {state.regels.length} wachtwoord
+              {state.regels.length === 1 ? "" : "en"} klaargezet
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard?.writeText(tekst).then(
+                  () => setGekopieerd(true),
+                  () => setGekopieerd(false),
+                );
+              }}
+              className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink-2 hover:bg-surface-2"
+            >
+              {gekopieerd ? "Gekopieerd" : "Kopieer alles"}
+            </button>
+          </div>
+
+          <p className="mt-2 text-xs text-ink-2">
+            Stuur elke Amigo zijn eigen regel door. Bij de eerste aanmelding
+            kiest hij een spelernaam en een eigen wachtwoord.
+          </p>
+
+          <textarea
+            readOnly
+            rows={Math.min(state.regels.length + 1, 14)}
+            value={tekst}
+            className="mt-3 w-full rounded-xl border border-line bg-surface p-3 font-mono text-xs text-ink"
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Mail opnieuw versturen                                                     */
+/* -------------------------------------------------------------------------- */
+
+export function ResendInviteButton({ email }: { email: string }) {
+  const [state, action] = useActionState<AdminFormState, FormData>(
+    resendInviteAction,
+    null,
+  );
+
+  return (
+    <div>
+      <form action={action}>
+        <input type="hidden" name="email" value={email} />
+        <button className="rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-surface-2">
+          mail opnieuw
+        </button>
+      </form>
+      {state?.success ? (
+        <p className="mt-1.5 text-xs font-semibold text-good-text">
+          {state.success}
+        </p>
+      ) : null}
+      {state?.error ? (
+        <p className="mt-1.5 max-w-xs text-xs text-critical">{state.error}</p>
+      ) : null}
+    </div>
+  );
+}
+
+export function BulkResendForm() {
+  const [state, action] = useActionState<AdminFormState, FormData>(
+    bulkResendAction,
+    null,
+  );
+
+  return (
+    <div className="space-y-4">
+      <Feedback state={state} />
+      <form action={action} className="flex flex-wrap items-end gap-3">
+        <Field label="Naar wie?">
+          <select className={inputClass} name="bereik" defaultValue="nieuw">
+            <option value="nieuw">Wie nog niet binnen is</option>
+            <option value="iedereen">Alle actieve leden</option>
+          </select>
+        </Field>
+        <Submit label="Mail versturen" />
+      </form>
+    </div>
   );
 }

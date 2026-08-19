@@ -51,8 +51,9 @@ Supabase → **SQL Editor**, en voer uit in deze volgorde:
 
 1. `supabase/migrations/0001_amigos_schema.sql`
 2. `supabase/migrations/0002_prikbord_voorstellen_pot.sql`
+3. `supabase/migrations/0003_ledenstatus.sql`
 
-Beide scripts mag je gerust een tweede keer draaien.
+Alle scripts mag je gerust een tweede keer draaien.
 
 ### Stap 2 — Jezelf beheerder maken
 
@@ -106,35 +107,44 @@ Staat een adres hier niet bij, dan weigert Supabase de omleiding en zie je
 `{"error":"requested path is invalid"}` op een supabase.co-pagina. Dat is dus
 geen fout van de site zelf.
 
-**En onder Authentication → Emails** twee sjablonen aanpassen, zodat de links
-op de juiste pagina landen:
+**En onder Authentication → Emails** de twee sjablonen vervangen. Dit is
+belangrijker dan het lijkt: standaard staat er een link in die meteen wordt
+ingewisseld zodra iemand — of iets — hem opent. Mailservers en virusscanners
+klikken die links vaak zélf aan om ze te controleren, en dan is de uitnodiging
+al opgebruikt voor je vriend hem opent. Vandaar een tussenpagina met een knop.
 
 *Invite user:*
 
 ```html
 <h2>Welkom bij De Amigos</h2>
-<p>Je bent uitgenodigd voor de ledenzone. Klik hieronder om je spelernaam en
-een wachtwoord te kiezen.</p>
+<p>Je bent uitgenodigd voor de ledenzone.</p>
 <p>
-  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/welkom">
+  <a href="{{ .SiteURL }}/uitnodiging?token_hash={{ .TokenHash }}&type=invite&next=/welkom">
     Aan de slag
   </a>
 </p>
 ```
 
-*Reset password:*
+*Reset password:* — dit sjabloon wordt ook gebruikt door de knop
+**mail opnieuw** bij Beheer → Leden, dus hou de tekst algemeen genoeg.
 
 ```html
-<h2>Nieuw wachtwoord</h2>
+<h2>Aanmelden bij De Amigos</h2>
+<p>Klik hieronder om een wachtwoord in te stellen voor de ledenzone.</p>
 <p>
-  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/wachtwoord">
-    Kies een nieuw wachtwoord
+  <a href="{{ .SiteURL }}/uitnodiging?token_hash={{ .TokenHash }}&type=recovery&next=/wachtwoord">
+    Wachtwoord instellen
   </a>
 </p>
 ```
 
-Laat je de standaardsjablonen staan, dan werkt het ook: de app vangt die vorm
-op via `/auth/hash`. De sjablonen hierboven zijn wel netter en betrouwbaarder.
+Die pagina toont enkel een knop. Een scanner haalt de pagina op — dat mag —
+maar duwt de knop niet in, dus blijft de uitnodiging geldig tot je vriend
+er zelf op klikt.
+
+Laat je de standaardsjablonen staan, dan werkt het meestal ook (de app vangt
+die vorm op via `/auth/hash`), maar dan loop je wél het risico op
+&quot;link verlopen&quot;-meldingen bij verse uitnodigingen.
 
 Komt een uitnodiging toch niet aan, dan kan je bij **Beheer → Leden** kiezen
 voor een startwachtwoord dat je zelf doorstuurt.
@@ -204,7 +214,9 @@ Beheerders wisselen bovenaan tussen **Lid** en **Beheer**.
 - **Financiën** — de pot, het aandeel per Amigo (rechtstreeks aanpasbaar), wie
   nog geld moet doorgeven, en elke ingave corrigeren of verwijderen.
 - **Leden** — toevoegen, rol wisselen, op non-actief zetten, wachtwoord
-  resetten, verwijderen.
+  resetten, verwijderen. Per lid zie je in welke fase hij zit: nog niet
+  aangemeld, wel aangemeld maar profiel niet af, of actief lid. Met **mail
+  opnieuw** stuur je iemand een verse aanmeldlink; dat mag zo vaak als nodig.
 - **Activiteiten** — een etentje of uitstap vastleggen. Je duidt aan wie erbij
   was; het geld van de anderen blijft staan.
 - **Cash toevoegen** — een resultaat ingeven namens een lid, ook met

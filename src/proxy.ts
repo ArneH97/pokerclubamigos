@@ -37,6 +37,7 @@ export async function proxy(request: NextRequest) {
   const isPublic =
     path === "/" ||
     path === "/login" ||
+    path === "/uitnodiging" ||
     path.startsWith("/auth") ||
     path === "/wachtwoord";
 
