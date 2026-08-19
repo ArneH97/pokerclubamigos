@@ -1,5 +1,6 @@
+import { signOutAction } from "@/app/auth/actions";
 import { ProfileForm } from "./profile-form";
-import { Card, CardTitle, PageTitle } from "@/components/ui";
+import { Card, CardTitle, PageTitle, buttonGhostClass } from "@/components/ui";
 import { money, num } from "@/lib/format";
 import { requireMember } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -57,6 +58,10 @@ export default async function ProfielPage() {
           </dl>
         </Card>
       </div>
+
+      <form action={signOutAction} className="mt-6">
+        <button className={`${buttonGhostClass} w-full sm:w-auto`}>Afmelden</button>
+      </form>
     </div>
   );
 }

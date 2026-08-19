@@ -17,12 +17,12 @@ export default async function LoginPage({
   searchParams: Promise<{ fout?: string }>;
 }) {
   const { member } = await getMember();
-  if (member) redirect("/dashboard");
+  if (member) redirect("/prikbord");
 
   const { fout } = await searchParams;
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5 py-10">
+    <main className="safe-x mx-auto flex min-h-dvh max-w-md flex-col justify-center py-10">
       <Link href="/" className="mb-8 self-start">
         <Logo size="md" />
       </Link>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signOutAction } from "@/app/auth/actions";
+import { Avatar } from "@/components/avatar";
 import { BottomNav } from "@/components/bottom-nav";
 import { Logo } from "@/components/logo";
 import { ModeSwitch, Nav } from "@/components/nav";
@@ -17,21 +18,32 @@ export default async function ClubLayout({
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-30 border-b border-line/70 bg-surface/90 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8">
-          <div className="flex items-center justify-between gap-3 py-3 sm:py-4">
-            <Link href="/dashboard" aria-label="Naar het dashboard">
+        <div className="safe-x mx-auto max-w-6xl">
+          <div className="flex h-14 items-center justify-between gap-3 sm:h-auto sm:py-4">
+            <Link href="/prikbord" aria-label="Naar het prikbord">
               <Logo size="sm" />
             </Link>
 
             <div className="flex items-center gap-2 sm:gap-3">
               {member.role === "admin" ? <ModeSwitch /> : null}
 
+              {/* Op de telefoon zit alles achter je eigen knop; de rest van
+                  het menu staat onderaan. */}
+              <Link
+                href="/profiel"
+                className="flex items-center gap-2 rounded-full border border-line py-1 pl-1 pr-1 transition hover:bg-surface-2 sm:pr-3"
+                aria-label="Jouw profiel"
+              >
+                <Avatar name={name} id={member.id} size="sm" />
+                <span className="hidden max-w-32 truncate text-sm font-medium text-ink-2 sm:inline">
+                  {name}
+                </span>
+              </Link>
+
               <Link
                 href="/meldingen"
                 className="relative hidden rounded-full border border-line p-2 text-ink-2 transition hover:bg-surface-2 hover:text-ink md:inline-flex"
-                aria-label={
-                  unread > 0 ? `Meldingen, ${unread} nieuw` : "Meldingen"
-                }
+                aria-label={unread > 0 ? `Meldingen, ${unread} nieuw` : "Meldingen"}
               >
                 <Bell />
                 {unread > 0 ? (
@@ -41,17 +53,9 @@ export default async function ClubLayout({
                 ) : null}
               </Link>
 
-              <Link
-                href="/profiel"
-                className="max-w-24 truncate text-sm font-medium text-ink-2 underline-offset-4 hover:underline sm:max-w-none"
-              >
-                {name}
-              </Link>
-
-              <form action={signOutAction}>
-                <button className="rounded-full border border-line px-3 py-1.5 text-sm font-medium text-ink-2 transition hover:bg-surface-2 hover:text-ink">
-                  Uit
-                  <span className="hidden sm:inline">loggen</span>
+              <form action={signOutAction} className="hidden md:block">
+                <button className="rounded-full border border-line px-3.5 py-1.5 text-sm font-medium text-ink-2 transition hover:bg-surface-2 hover:text-ink">
+                  Afmelden
                 </button>
               </form>
             </div>
@@ -64,11 +68,11 @@ export default async function ClubLayout({
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-5 py-6 pb-28 sm:px-8 sm:py-10 md:pb-10">
+      <main className="safe-x mx-auto max-w-6xl py-6 pb-28 sm:py-10 md:pb-10">
         {children}
       </main>
 
-      <footer className="mx-auto hidden max-w-6xl px-5 pb-10 text-xs text-ink-muted sm:px-8 md:block">
+      <footer className="safe-x mx-auto hidden max-w-6xl pb-10 text-xs text-ink-muted md:block">
         De Amigo&apos;s · Aalst
       </footer>
 

@@ -147,6 +147,23 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Ruimte voor de afgeronde hoeken en de streep onderaan een iPhone. */
+.safe-x {
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+}
+
+@media (min-width: 640px) {
+  .safe-x {
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+  }
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 input,
 select,
 textarea {

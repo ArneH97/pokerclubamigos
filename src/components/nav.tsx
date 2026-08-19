@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const LID = [
-  { href: "/dashboard", label: "Dashboard" },
   { href: "/prikbord", label: "Prikbord" },
+  { href: "/dashboard", label: "De pot" },
   { href: "/ingave", label: "Resultaat ingeven" },
   { href: "/voorstellen", label: "Voorstellen" },
   { href: "/meldingen", label: "Meldingen" },
@@ -28,12 +28,12 @@ export function ModeSwitch() {
     <div
       role="group"
       aria-label="Modus"
-      className="inline-flex rounded-full border border-line bg-surface-2 p-1"
+      className="inline-flex shrink-0 rounded-full border border-line bg-surface-2 p-0.5 sm:p-1"
     >
       <Link
-        href="/dashboard"
+        href="/prikbord"
         aria-current={inBeheer ? undefined : "true"}
-        className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${
+        className={`rounded-full px-3 py-1 text-[13px] font-semibold transition sm:px-3.5 sm:py-1.5 sm:text-sm ${
           inBeheer ? "text-ink-2 hover:text-ink" : "bg-surface text-ink shadow-sm"
         }`}
       >
@@ -42,7 +42,7 @@ export function ModeSwitch() {
       <Link
         href="/beheer"
         aria-current={inBeheer ? "true" : undefined}
-        className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${
+        className={`rounded-full px-3 py-1 text-[13px] font-semibold transition sm:px-3.5 sm:py-1.5 sm:text-sm ${
           inBeheer ? "bg-brand text-white shadow-sm" : "text-ink-2 hover:text-ink"
         }`}
       >

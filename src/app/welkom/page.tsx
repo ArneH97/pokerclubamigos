@@ -8,10 +8,10 @@ export const dynamic = "force-dynamic";
 
 export default async function WelkomPage() {
   const { member } = await requireMember({ allowNoNickname: true });
-  if (member.nickname?.trim()) redirect("/dashboard");
+  if (member.nickname?.trim()) redirect("/prikbord");
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center px-5 py-10">
+    <main className="safe-x mx-auto flex min-h-dvh max-w-xl flex-col justify-center py-10">
       <Logo size="lg" />
 
       <h1 className="mt-8 text-3xl font-bold tracking-tight text-ink">

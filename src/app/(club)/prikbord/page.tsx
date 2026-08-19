@@ -1,30 +1,31 @@
 import Link from "next/link";
 import { FeedCard } from "@/components/feed-card";
-import { Card, Empty, PageTitle, buttonClass } from "@/components/ui";
-import { requireMember } from "@/lib/session";
+import { PotStrip } from "@/components/pot-strip";
+import { Card, Empty, buttonClass } from "@/components/ui";
+import { num } from "@/lib/format";
+import { getActiveSeason, getClubTotals, requireMember } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import type { FeedItem, ResultComment, Season } from "@/lib/types";
+import type { FeedItem, ResultComment } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function PrikbordPage() {
   const { member } = await requireMember();
-  const supabase = await createClient();
-
-  const { data: seasonData } = await supabase
-    .from("seasons")
-    .select("*")
-    .eq("is_active", true)
-    .maybeSingle();
-  const season = (seasonData ?? null) as Season | null;
+  const season = await getActiveSeason();
+  const voornaam = member.nickname?.trim() || member.full_name.split(" ")[0];
 
   if (!season) {
     return (
       <Card>
-        <Empty>Er loopt nog geen seizoen.</Empty>
+        <Empty>
+          Er loopt nog geen seizoen. De beheerder maakt er eerst één aan.
+        </Empty>
       </Card>
     );
   }
+
+  const supabase = await createClient();
+  const totals = await getClubTotals();
 
   const { data: feed } = await supabase
     .from("feed")
@@ -61,25 +62,36 @@ export default async function PrikbordPage() {
   );
 
   return (
-    <>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <PageTitle sub="Elke cash van de Amigo's, met plaats voor commentaar. Zoals het hoort.">
-          Prikbord
-        </PageTitle>
-        <Link href="/ingave" className={`${buttonClass} mb-6`}>
+    <div className="mx-auto max-w-2xl">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="hand text-4xl leading-none text-ink sm:text-5xl">
+            Dag {voornaam}
+          </h1>
+          <p className="mt-1.5 text-sm text-ink-2">
+            Dit is wat de Amigo&apos;s de laatste tijd hebben uitgespookt.
+          </p>
+        </div>
+        <Link href="/ingave" className={`${buttonClass} hidden sm:inline-flex`}>
           Resultaat ingeven
         </Link>
       </div>
 
-      {items.length === 0 ? (
-        <Card>
-          <Empty>
-            Nog niets te zien. Wie geeft de eerste cash in?
-          </Empty>
-        </Card>
-      ) : (
-        <div className="mx-auto grid max-w-2xl gap-5">
-          {items.map((item) => (
+      <PotStrip
+        pot={num(totals.pot)}
+        target={num(season.target_amount)}
+        seasonName={season.name}
+      />
+
+      <div className="mt-5 grid gap-5">
+        {items.length === 0 ? (
+          <Card>
+            <Empty>
+              Nog niets te zien. Wie geeft de eerste cash in?
+            </Empty>
+          </Card>
+        ) : (
+          items.map((item) => (
             <FeedCard
               key={item.id}
               item={item}
@@ -88,9 +100,9 @@ export default async function PrikbordPage() {
               isAdmin={member.role === "admin"}
               comments={comments[item.id] ?? []}
             />
-          ))}
-        </div>
-      )}
-    </>
+          ))
+        )}
+      </div>
+    </div>
   );
 }

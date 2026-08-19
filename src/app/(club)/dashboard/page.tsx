@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { FeedCard } from "@/components/feed-card";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import { PotMeter } from "@/components/pot-meter";
 import { StatTile } from "@/components/stat-tile";
@@ -11,7 +10,7 @@ import {
   requireMember,
 } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import type { FeedItem, LeaderboardRow, MemberLedger } from "@/lib/types";
+import type { LeaderboardRow, MemberLedger } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -34,33 +33,21 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const totals = await getClubTotals();
 
-  const [{ data: board }, { data: feed }, { data: myLikes }, { data: ledger }] =
-    await Promise.all([
-      supabase
-        .from("leaderboard")
-        .select("*")
-        .eq("season_id", season.id)
-        .order("contributed", { ascending: false }),
-      supabase
-        .from("feed")
-        .select("*")
-        .eq("season_id", season.id)
-        .order("created_at", { ascending: false })
-        .limit(3),
-      supabase.from("result_likes").select("result_id").eq("member_id", member.id),
-      supabase
-        .from("member_ledger")
-        .select("*")
-        .eq("member_id", member.id)
-        .maybeSingle(),
-    ]);
+  const [{ data: board }, { data: ledger }] = await Promise.all([
+    supabase
+      .from("leaderboard")
+      .select("*")
+      .eq("season_id", season.id)
+      .order("contributed", { ascending: false }),
+    supabase
+      .from("member_ledger")
+      .select("*")
+      .eq("member_id", member.id)
+      .maybeSingle(),
+  ]);
 
   const rows = (board ?? []) as LeaderboardRow[];
-  const items = (feed ?? []) as FeedItem[];
   const mine = (ledger as MemberLedger | null) ?? null;
-  const liked = new Set(
-    ((myLikes ?? []) as { result_id: string }[]).map((l) => l.result_id),
-  );
 
   const me = rows.find((r) => r.member_id === member.id);
   const myRank = rows.findIndex((r) => r.member_id === member.id) + 1;
@@ -69,16 +56,16 @@ export default async function DashboardPage() {
     <>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-            Dag {member.nickname?.trim() || member.full_name.split(" ")[0]}
+          <h1 className="hand text-4xl leading-none text-ink sm:text-5xl">
+            De pot
           </h1>
           <p className="mt-1 text-sm text-ink-2">
             {season.name} · {shortDate(season.starts_on)} —{" "}
             {shortDate(season.ends_on)}
           </p>
         </div>
-        <Link href="/ingave" className={buttonClass}>
-          Resultaat ingeven
+        <Link href="/prikbord" className={buttonClass}>
+          Naar het prikbord
         </Link>
       </div>
 
@@ -131,38 +118,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <div className="mt-6">
-        <div className="mb-4 flex items-baseline justify-between gap-3">
-          <h2 className="text-lg font-bold text-ink">Laatst op het prikbord</h2>
-          <Link
-            href="/prikbord"
-            className="text-sm text-ink-2 underline underline-offset-4 hover:text-ink"
-          >
-            Alles bekijken
-          </Link>
-        </div>
-
-        {items.length === 0 ? (
-          <Card>
-            <Empty>
-              Nog niets te zien. Geef je eerste cash in en trap het prikbord af.
-            </Empty>
-          </Card>
-        ) : (
-          <div className="grid gap-4">
-            {items.map((item) => (
-              <FeedCard
-                key={item.id}
-                item={item}
-                likedByMe={liked.has(item.id)}
-                currentMemberId={member.id}
-                isAdmin={member.role === "admin"}
-                compact
-              />
-            ))}
-          </div>
-        )}
-      </div>
     </>
   );
 }

@@ -14,15 +14,16 @@ type Tab = {
 
 /**
  * Vaste menubalk onderaan, enkel op kleine schermen.
- * Vijf plaatsen: meer wordt onleesbaar op een telefoon.
+ * Vijf plaatsen van gelijke breedte; de balk zit tegen de onderrand met
+ * ruimte voor de streep van de iPhone eronder.
  */
 export function BottomNav({ unread = 0 }: { unread?: number }) {
   const pathname = usePathname();
   const inBeheer = pathname.startsWith("/beheer");
 
   const lid: Tab[] = [
-    { href: "/dashboard", label: "Pot", icon: <IconHome /> },
     { href: "/prikbord", label: "Prikbord", icon: <IconBoard /> },
+    { href: "/dashboard", label: "De pot", icon: <IconPot /> },
     { href: "/ingave", label: "Ingeven", icon: <IconPlus />, accent: true },
     { href: "/voorstellen", label: "Stemmen", icon: <IconVote /> },
     { href: "/meldingen", label: "Meldingen", icon: <IconBell />, badge: unread },
@@ -41,26 +42,23 @@ export function BottomNav({ unread = 0 }: { unread?: number }) {
   return (
     <nav
       aria-label="Hoofdmenu"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur md:hidden"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur md:hidden"
     >
-      <ul className="mx-auto flex max-w-lg">
+      <ul className="flex items-stretch">
         {tabs.map((tab) => {
           const active =
             pathname === tab.href ||
-            (tab.href !== "/beheer" &&
-              tab.href !== "/dashboard" &&
-              pathname.startsWith(`${tab.href}/`));
+            (tab.href !== "/beheer" && pathname.startsWith(`${tab.href}/`));
 
           return (
-            <li key={tab.href} className="flex-1">
+            <li key={tab.href} className="min-w-0 flex-1">
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className="flex flex-col items-center gap-1 px-1 pb-2 pt-2.5"
+                className="flex h-full flex-col items-center justify-center gap-1 px-0.5 pb-1.5 pt-2"
               >
                 <span
-                  className={`relative grid h-9 w-9 place-items-center rounded-full transition ${
+                  className={`relative grid h-8 w-8 place-items-center rounded-full transition ${
                     tab.accent
                       ? inBeheer
                         ? "bg-brand text-white"
@@ -74,13 +72,13 @@ export function BottomNav({ unread = 0 }: { unread?: number }) {
                 >
                   {tab.icon}
                   {tab.badge && tab.badge > 0 ? (
-                    <span className="absolute -right-1 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold text-white tabular">
+                    <span className="absolute -right-1.5 -top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-white tabular">
                       {tab.badge > 9 ? "9+" : tab.badge}
                     </span>
                   ) : null}
                 </span>
                 <span
-                  className={`text-[11px] leading-none ${
+                  className={`w-full truncate text-center text-[10.5px] leading-none ${
                     active ? "font-semibold text-ink" : "text-ink-muted"
                   }`}
                 >
@@ -103,14 +101,6 @@ const strokeProps = {
   strokeLinejoin: "round" as const,
 };
 
-function IconHome() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden {...strokeProps}>
-      <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" />
-    </svg>
-  );
-}
-
 function IconBoard() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden {...strokeProps}>
@@ -119,10 +109,26 @@ function IconBoard() {
   );
 }
 
+function IconPot() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden {...strokeProps}>
+      <ellipse cx="12" cy="7" rx="7" ry="2.6" />
+      <path d="M5 7v4.5c0 1.44 3.13 2.6 7 2.6s7-1.16 7-2.6V7" />
+      <path d="M5 11.5V16c0 1.44 3.13 2.6 7 2.6s7-1.16 7-2.6v-4.5" />
+    </svg>
+  );
+}
+
 function IconPlus() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden {...strokeProps} strokeWidth={2.2}>
-      <path d="M12 5v14M5 12h14" />
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      aria-hidden
+      {...strokeProps}
+      strokeWidth={2.4}
+    >
+      <path d="M12 5.5v13M5.5 12h13" />
     </svg>
   );
 }

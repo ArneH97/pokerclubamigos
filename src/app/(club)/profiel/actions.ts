@@ -69,6 +69,6 @@ export async function saveProfileAction(
 
   refresh();
 
-  if (!member.nickname?.trim()) redirect("/dashboard");
+  if (!member.nickname?.trim()) redirect("/prikbord");
   return { success: "Bewaard." };
 }

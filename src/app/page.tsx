@@ -48,11 +48,11 @@ const BRIEFJES = [
 
 export default async function LandingPage() {
   const { member } = await getMember();
-  if (member) redirect("/dashboard");
+  if (member) redirect("/prikbord");
 
   return (
     <div className="min-h-dvh overflow-x-hidden">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5 sm:px-8">
+      <header className="safe-x mx-auto flex max-w-5xl items-center justify-between py-5">
         <Logo size="sm" />
         <Link
           href="/login"
@@ -62,7 +62,7 @@ export default async function LandingPage() {
         </Link>
       </header>
 
-      <main className="mx-auto max-w-5xl px-5 sm:px-8">
+      <main className="safe-x mx-auto max-w-5xl">
         {/* Hero ---------------------------------------------------------- */}
         <section className="pb-10 pt-8 text-center sm:pb-16 sm:pt-16">
           <p className="hand text-xl text-ink-2 sm:text-2xl">welkom bij</p>
@@ -229,7 +229,7 @@ export default async function LandingPage() {
         </section>
       </main>
 
-      <footer className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 border-t border-line px-5 py-8 text-sm text-ink-muted sm:px-8">
+      <footer className="safe-x mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 border-t border-line py-8 text-sm text-ink-muted">
         <span className="flex items-center gap-2">
           <Chip className="h-5 w-5" />
           De Amigo&apos;s · Aalst

@@ -10,6 +10,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Zonder viewport-fit blijft env(safe-area-inset-*) op nul staan, en dan
+  // schuift de menubalk onder de streep van de iPhone.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f8f1e4" },
     { media: "(prefers-color-scheme: dark)", color: "#0d0d0d" },

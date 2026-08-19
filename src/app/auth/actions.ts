@@ -29,7 +29,7 @@ export async function loginAction(
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect("/prikbord");
 }
 
 export async function requestResetAction(
@@ -84,7 +84,7 @@ export async function updatePasswordAction(
   if (error) return { error: error.message };
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect("/prikbord");
 }
 
 export async function signOutAction() {
