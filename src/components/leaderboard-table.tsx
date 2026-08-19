@@ -30,7 +30,7 @@ export function LeaderboardTable({
               #
             </th>
             <th scope="col" className="py-2 pr-3 font-medium">
-              Lid
+              Amigo
             </th>
             <th scope="col" className="whitespace-nowrap py-2 pr-3 font-medium">
               Bijdrage aan de pot

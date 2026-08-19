@@ -56,9 +56,8 @@ export async function createResultAction(
   if (error) return { error: `Opslaan lukte niet: ${error.message}` };
 
   revalidatePath("/dashboard");
-  revalidatePath("/leaderboard");
-  revalidatePath("/resultaten");
-  redirect("/dashboard?opgeslagen=1");
+  revalidatePath("/prikbord");
+  redirect("/prikbord");
 }
 
 export async function deleteOwnResultAction(formData: FormData) {
@@ -70,6 +69,5 @@ export async function deleteOwnResultAction(formData: FormData) {
   await supabase.from("results").delete().eq("id", id).eq("member_id", member.id);
 
   revalidatePath("/dashboard");
-  revalidatePath("/leaderboard");
-  revalidatePath("/resultaten");
+  revalidatePath("/prikbord");
 }

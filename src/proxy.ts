@@ -35,11 +35,14 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isPublic =
-    path === "/" || path.startsWith("/auth") || path === "/wachtwoord";
+    path === "/" ||
+    path === "/login" ||
+    path.startsWith("/auth") ||
+    path === "/wachtwoord";
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/login";
     url.searchParams.set("fout", "login");
     return NextResponse.redirect(url);
   }

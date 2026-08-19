@@ -46,11 +46,11 @@ export async function requestResetAction(
     redirectTo: `${siteUrl}/auth/confirm?next=/wachtwoord`,
   });
 
-  // Bewust altijd dezelfde boodschap: zo verklap je niet welke adressen
-  // een account hebben.
+  // Bewust altijd dezelfde boodschap: zo verklap je niet welke adressen een
+  // account hebben.
   return {
     success:
-      "Als dit adres bij ons bekend is, staat er zo een mail met een link in je inbox.",
+      "Als dat adres bij ons bekend is, staat er zo een mail met een link in je inbox.",
   };
 }
 
@@ -91,5 +91,5 @@ export async function signOutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/login");
 }

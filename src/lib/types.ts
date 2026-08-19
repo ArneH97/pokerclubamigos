@@ -61,9 +61,122 @@ export type SeasonTotals = {
   starts_on: string;
   ends_on: string;
   is_active: boolean;
-  pot: number;
-  pot_paid: number;
+  contributions: number;
+  contributions_paid: number;
   profit: number;
   entries: number;
   contributors: number;
+};
+
+export type ClubTotals = {
+  pot: number;
+  openstaand: number;
+  pot_verwacht: number;
+  leden: number;
+};
+
+export type MemberLedger = {
+  member_id: string;
+  display_name: string;
+  full_name: string;
+  is_active: boolean;
+  role: Role;
+  gestort: number;
+  openstaand: number;
+  bijgedragen: number;
+  correcties: number;
+  verbruikt: number;
+  aandeel: number;
+};
+
+export type MemberAdjustment = {
+  id: string;
+  member_id: string;
+  amount: number;
+  kind: "startsaldo" | "correctie";
+  reason: string;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type Activity = {
+  id: string;
+  name: string;
+  happened_on: string;
+  total_cost: number;
+  note: string | null;
+  created_at: string;
+  participants: number;
+  uit_de_pot: number;
+};
+
+export type ActivityCharge = {
+  activity_id: string;
+  member_id: string;
+  amount: number;
+};
+
+export type NotificationKind = "nieuwe_cash" | "like" | "reactie";
+
+export type NotificationItem = {
+  id: string;
+  member_id: string;
+  kind: NotificationKind;
+  is_read: boolean;
+  created_at: string;
+  result_id: string | null;
+  actor_id: string | null;
+  actor_name: string | null;
+  cashout: number | null;
+  buyin: number | null;
+  contribution: number | null;
+  played_on: string | null;
+  tournament: string | null;
+  venue: string | null;
+  comment_body: string | null;
+};
+
+export type FeedItem = {
+  id: string;
+  member_id: string;
+  season_id: string;
+  played_on: string;
+  venue: string;
+  tournament: string | null;
+  finish_position: number | null;
+  buyin: number;
+  cashout: number;
+  profit: number;
+  contribution: number;
+  is_paid: boolean;
+  note: string | null;
+  created_at: string;
+  full_name: string;
+  display_name: string;
+  like_count: number;
+  comment_count: number;
+};
+
+export type ResultComment = {
+  id: string;
+  result_id: string;
+  member_id: string;
+  body: string;
+  created_at: string;
+  members: Pick<Member, "id" | "full_name" | "nickname"> | null;
+};
+
+export type ProposalStatus = "open" | "gekozen" | "gesloten";
+
+export type Proposal = {
+  id: string;
+  season_id: string;
+  title: string;
+  description: string | null;
+  estimated_cost: number | null;
+  status: ProposalStatus;
+  created_at: string;
+  created_by: string | null;
+  author: string | null;
+  votes: number;
 };

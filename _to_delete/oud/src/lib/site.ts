@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-/** Basis-URL van de site: werkt lokaal, op Vercel-previews en op het domein. */
+/** Basis-URL van de site, werkt lokaal, op Vercel-previews en op het domein. */
 export async function getSiteUrl() {
   const configured = process.env.NEXT_PUBLIC_SITE_URL;
   if (configured) return configured.replace(/\/$/, "");

@@ -1,37 +1,64 @@
 # De Amigo's — clubsite
 
-Website voor pokerclub De Amigo's: leden geven hun tornooiresultaat in, de site
-rekent automatisch 10% van de winst af voor de clubkas, en iedereen volgt live
-de pot tegenover het streefbedrag.
+Website voor pokerclub De Amigo's uit Aalst. Een publieke startpagina over de
+club, en daarachter een ledenzone met het prikbord, de spaarpot en het beheer.
 
-Gebouwd met Next.js (App Router) + Supabase, klaar voor Vercel.
-
----
-
-## In het kort
-
-- **Login met e-mail en wachtwoord.** Leden kunnen zich niet zelf registreren:
-  de voorzitter nodigt uit vanuit de beheerpagina.
-- **10% wordt door de database berekend**, niet door de app. De kolom
-  `contribution` is een gegenereerde kolom — er kan niemand van afwijken.
-- **Eigen Supabase-project.** Losstaand van pokerleague: eigen database, eigen
-  gebruikers, eigen backups.
-- **RLS staat aan.** Wie inlogt maar niet in `members` staat, ziet geen enkele
-  rij van de club.
+Gebouwd met Next.js (App Router) + Supabase, draait op Vercel.
 
 ---
 
-## Stap 1 — Database klaarzetten
+## Hoe het geld werkt
 
-1. Open je Supabase-project → **SQL Editor** → **New query**.
-2. Plak de volledige inhoud van `supabase/migrations/0001_amigos_schema.sql` en
-   voer uit. Meer moet je in de database niet doen.
+**Het is één pot.** Dat is wat de leden zien: één bedrag tegenover het
+spaardoel. Niemand heeft een eigen rekening, niemand kan in het rood staan.
 
-## Stap 2 — Jezelf beheerder maken
+Achter de schermen houdt de site wel bij hoeveel elke Amigo al in de pot heeft
+gestoken — zijn **aandeel**. Dat dient maar voor één ding: beschermen wie niet
+meegaat naar een activiteit.
 
-Nodig jezelf één keer uit via Supabase (**Authentication → Users → Invite user**)
-met je eigen e-mailadres, of gebruik een bestaand account. Draai daarna in de
-SQL Editor:
+**Voorbeeld.** Er zit €1.200 in de pot en we gaan eten voor €1.000. Speler X
+gaat niet mee en heeft €100 in de pot. Dan gaat er €1.000 uit de pot, behalve
+die €100 van X: die blijft staan voor de volgende keer. Na afloop zit er €200
+in de pot, waarvan €100 nog altijd van X. Hoe de rest tussen de aanwezigen
+verdeeld zit, maakt niet uit — het is één pot.
+
+Zit er bij de aanwezigen samen te weinig, dan haalt de site eruit wat er is en
+meldt ze hoeveel er van buiten de pot bij moest.
+
+Naast het aandeel is er per Amigo nog **nog te storten**: bijdragen uit cashes
+die nog niet betaald zijn. Betalen gebeurt niet meteen — op het einde van het
+seizoen krijgt iedereen zijn afrekening en stort hij in één keer. Zodra dat
+gebeurd is vink je dat af bij Financiën, en komt het geld in de pot.
+
+### De Excel van Guido overzetten
+
+Ga naar **Beheer → Financiën**. Daar staat elke Amigo met een invulveldje.
+Typ per speler wat er nu voor hem in het potje zit en klik **zet**. Klaar.
+Vanaf dan loopt het vanzelf: elke gestorte bijdrage komt erbij, elke activiteit
+gaat eraf.
+
+Wil je ook de oude cashes zelf in de site (voor de ranglijst en het prikbord),
+gebruik dan **Beheer → Cash toevoegen** met *&apos;zit al in de kas&apos;*
+aangevinkt — maar zet dan het aandeel van die speler niet óók handmatig, anders
+telt hetzelfde geld dubbel.
+
+---
+
+## Installatie
+
+### Stap 1 — Database
+
+Supabase → **SQL Editor**, en voer uit in deze volgorde:
+
+1. `supabase/migrations/0001_amigos_schema.sql`
+2. `supabase/migrations/0002_prikbord_voorstellen_pot.sql`
+
+Beide scripts mag je gerust een tweede keer draaien.
+
+### Stap 2 — Jezelf beheerder maken
+
+Maak in Supabase (**Authentication → Users → Add user**) een account met je
+eigen e-mailadres en wachtwoord, en draai daarna:
 
 ```sql
 insert into public.members (id, email, full_name, role)
@@ -40,26 +67,51 @@ where email = 'arne@halcoservices.be'
 on conflict (id) do update set role = 'admin';
 ```
 
-Vanaf dan kan je alle andere leden gewoon vanuit de site uitnodigen.
+Daarna voeg je alle andere leden toe vanuit de site, en maak je Guido beheerder
+met één klik.
 
-## Stap 3 — Mailsjablonen instellen
+### Stap 3 — Mails via Resend
 
-De app vangt uitnodigings- en herstellinks op via `/auth/confirm`. Ga in Supabase
-naar **Authentication → Emails** en pas twee sjablonen aan.
+Supabase verstuurt de uitnodigingen en de herstelmails. Zonder eigen SMTP mag
+dat maar een paar mails per uur — met Resend erachter werkt het gewoon.
 
-**Invite user:**
+**In Supabase → Project Settings → Authentication → SMTP Settings**, zet Custom
+SMTP aan en vul in:
+
+| Veld | Waarde |
+|---|---|
+| Host | `smtp.resend.com` |
+| Port | `465` |
+| Username | `resend` |
+| Password | je Resend API-sleutel (`re_…`) |
+| Sender email | een adres op je geverifieerde domein, bv. `noreply@jouwdomein.be` |
+| Sender name | `De Amigo's` |
+
+Let op: het afzenderdomein moet in Resend geverifieerd zijn (Domains → DNS-records
+bij easyhost zetten). Een adres op een niet-geverifieerd domein wordt geweigerd.
+
+**Daarna, onder Authentication → URL Configuration:**
+
+- **Site URL**: je echte domein, bv. `https://www.deamigos.be`
+- **Redirect URLs**: `https://www.deamigos.be/**` en `http://localhost:3000/**`
+
+**En onder Authentication → Emails** twee sjablonen aanpassen, zodat de links
+op de juiste pagina landen:
+
+*Invite user:*
 
 ```html
 <h2>Welkom bij De Amigo's</h2>
-<p>Klik hieronder om je wachtwoord in te stellen.</p>
+<p>Je bent uitgenodigd voor de ledenzone. Klik hieronder om je spelernaam en
+een wachtwoord te kiezen.</p>
 <p>
-  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/wachtwoord">
-    Wachtwoord instellen
+  <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/welkom">
+    Aan de slag
   </a>
 </p>
 ```
 
-**Reset password:**
+*Reset password:*
 
 ```html
 <h2>Nieuw wachtwoord</h2>
@@ -70,83 +122,82 @@ naar **Authentication → Emails** en pas twee sjablonen aan.
 </p>
 ```
 
-Zet onder **Authentication → URL Configuration**:
+Komt een uitnodiging toch niet aan, dan kan je bij **Beheer → Leden** kiezen
+voor een startwachtwoord dat je zelf doorstuurt.
 
-- **Site URL**: je echte domein, bv. `https://www.deamigos.be`
-- **Redirect URLs**: voeg `https://www.deamigos.be/**` toe, en
-  `http://localhost:3000/**` om lokaal te kunnen testen.
+### Stap 4 — Omgevingsvariabelen
 
-## Stap 4 — Omgevingsvariabelen
+`.env.example` kopiëren naar `.env.local` voor lokaal werk, en dezelfde
+variabelen in Vercel zetten onder **Settings → Environment Variables**:
 
-Kopieer `.env.example` naar `.env.local` voor lokaal werk, en zet dezelfde
-variabelen in Vercel onder **Settings → Environment Variables**:
-
-| Variabele | Waar vind je die | Zichtbaar in de browser |
+| Variabele | Waar | Zichtbaar in de browser |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Settings → API | ja |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Settings → API | ja |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API | **nee — nooit delen** |
 | `NEXT_PUBLIC_SITE_URL` | je eigen domein | ja |
 
-De service role key is enkel nodig om leden uit te nodigen. Zet die nooit in een
-variabele die met `NEXT_PUBLIC_` begint.
+De Resend-sleutel zelf hoeft niet in Vercel: die zit in de SMTP-instellingen
+van Supabase.
 
-## Stap 5 — Lokaal draaien
+### Stap 5 — Lokaal draaien
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000
+### Stap 6 — Domein via easyhost naar Vercel
 
-## Stap 6 — Domein via easyhost naar Vercel
+1. Vercel → **Settings → Domains → Add** → je domein.
+2. Vercel toont de DNS-records: meestal een `A` voor `@` en een `CNAME` voor
+   `www` naar `cname.vercel-dns.com`.
+3. Die records toevoegen in het DNS-beheer bij easyhost.
+4. Zet daarna `NEXT_PUBLIC_SITE_URL` in Vercel op je domein.
 
-1. In Vercel: **Settings → Domains → Add** → typ je domein.
-2. Vercel toont welke DNS-records je nodig hebt. Meestal:
-   - `A` record voor `@` naar het IP dat Vercel toont
-   - `CNAME` record voor `www` naar `cname.vercel-dns.com`
-3. Log in bij easyhost → DNS-beheer van je domein → voeg die records toe.
-4. Wacht tot de DNS doorgedrongen is (kan tot een paar uur duren). Vercel regelt
-   het https-certificaat zelf.
-5. Zet daarna `NEXT_PUBLIC_SITE_URL` in Vercel op je domein, en pas de **Site
-   URL** in Supabase aan.
+Staat het project in Vercel op preset **Other**? Zet het op **Next.js**,
+anders faalt de build met *&quot;No Output Directory named public&quot;*.
 
 ---
 
-## Hoe het werkt
+## Spelernaam
 
-### Tabellen
+Elke Amigo kiest bij de eerste aanmelding zijn spelernaam. Die naam staat
+overal: prikbord, ranglijst, reacties, meldingen en beheer. Twee keer dezelfde
+naam kan niet — de database blokkeert dat.
 
-| Tabel | Wat erin zit |
-|---|---|
-| `members` | Wie lid is. Verwijst naar `auth.users` van dit project. |
-| `seasons` | Spaarjaar met streefbedrag. Eén seizoen is actief. |
-| `results` | Elke ingave: buy-in, cash-out, datum, tornooi. `profit` en `contribution` berekent de database. |
+---
 
-Twee views, `leaderboard` en `season_totals`, doen het rekenwerk voor de
-ranglijst en de pot.
+## Wat zit erin
 
-### Rollen
+### Ledenmodus
 
-- **Lid** — geeft eigen resultaten in, mag die verwijderen zolang ze niet als
-  betaald zijn afgevinkt, ziet alles van de club.
-- **Beheerder** — daarbovenop: leden uitnodigen en beheren, seizoen en
-  streefbedrag instellen, elke ingave corrigeren of verwijderen, betalingen
-  afvinken.
+- **Dashboard** — de pot tegenover het spaardoel, jouw eigen cijfers en de
+  ranglijst van wie het meest bijdraagt.
+- **Prikbord** — elke cash met buy-in, cash-out en wat er in de pot ging.
+  Liken en reageren kan.
+- **Resultaat ingeven** — buy-in en cash-out; de 10% rekent de database uit.
+- **Voorstellen** — stemmen op wat we met de pot doen. Je mag op meerdere
+  ideeën stemmen.
+- **Meldingen** — als iemand een cash ingeeft, of jouw cash liket of erop
+  reageert. Die meldingen worden door de database zelf aangemaakt, dus ze
+  kunnen niet vergeten worden.
 
-### Iemand twee keer uitnodigen
+### Beheermodus (Arne en Guido)
 
-Dat kan geen kwaad. Bestaat het e-mailadres al als account, dan stuurt de site
-géén tweede uitnodiging: die persoon wordt gewoon (opnieuw) lid en logt in met
-het wachtwoord dat hij of zij al kent.
+Beheerders wisselen bovenaan tussen **Lid** en **Beheer**.
 
-### Let op bij het gratis plan
-
-Staat dit project op het Free-plan, dan pauzeert Supabase het na een week zonder
-activiteit en zijn er geen backups. Voor een clubkas is dat vervelend: na een
-rustige periode moet je het project handmatig terug wakker maken. Draait de club
-er echt op, overweeg dan het Pro-plan voor deze organisatie.
+- **Financiën** — de pot, het aandeel per Amigo (rechtstreeks aanpasbaar), wie
+  nog moet storten, en elke ingave corrigeren of verwijderen.
+- **Leden** — toevoegen, rol wisselen, op non-actief zetten, wachtwoord
+  resetten, verwijderen.
+- **Activiteiten** — een etentje of uitstap vastleggen. Je duidt aan wie erbij
+  was; het geld van de anderen blijft staan.
+- **Cash toevoegen** — een resultaat ingeven namens een lid, ook met
+  terugwerkende kracht.
+- **Voorstellen** — ideeën klaarzetten, stemming afsluiten, kiezen.
+- **Seizoen** — naam, periode en spaardoel. De pot loopt door over seizoenen
+  heen; enkel de ranglijst begint opnieuw.
 
 ---
 
@@ -155,21 +206,27 @@ er echt op, overweeg dan het Pro-plan voor deze organisatie.
 ```
 src/
   app/
-    page.tsx              landing + login
-    auth/                 server actions, confirm-route voor mails
-    wachtwoord/           wachtwoord instellen na uitnodiging
-    geen-toegang/         ingelogd maar (nog) geen lid
+    page.tsx              publieke startpagina
+    login/                inloggen en wachtwoord vergeten
+    welkom/               spelernaam en eigen wachtwoord kiezen
+    wachtwoord/           nieuw wachtwoord na een herstelmail
+    auth/                 server actions en de link uit de mails
     (club)/
-      dashboard/          pot, eigen cijfers, top 5
-      ingave/             resultaat ingeven, met live 10%-berekening
-      leaderboard/        volledige ranglijst
-      resultaten/         alle ingaves van de club
-      admin/              beheer
-  components/             potmeter, stat tiles, leaderboard, nav
+      dashboard/          pot, eigen cijfers, ranglijst
+      prikbord/           feed met likes en reacties
+      ingave/             resultaat ingeven
+      voorstellen/        stemmen
+      meldingen/          meldingen
+      profiel/            spelernaam en wachtwoord
+      beheer/             financiën, leden, activiteiten, seizoen, voorstellen
+  components/             logo, potmeter, feedkaart, ranglijst, navigatie
   lib/                    supabase-clients, sessie, formattering
-supabase/migrations/      het SQL-script
+supabase/migrations/      de SQL-scripts
 ```
 
-De kleuren van grafiek en meter komen uit een palet dat gecontroleerd is op
-kleurenblindheid en contrast, in licht én donker. Wijzig ze niet zonder opnieuw
-te controleren.
+De kleuren van de meters en balken komen uit een palet dat gecontroleerd is op
+kleurenblindheid en contrast, in licht én donker. Pas ze niet aan zonder
+opnieuw te controleren.
+
+Row level security staat op elke tabel: wie inlogt maar niet in `members` staat,
+ziet geen enkele rij.

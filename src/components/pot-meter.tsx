@@ -1,7 +1,7 @@
 import { money, moneyShort } from "@/lib/format";
 
 /**
- * De pot tegenover het streefbedrag.
+ * De pot tegenover het spaardoel.
  * Hero-cijfer + één meter: gevulde balk in het accent, lege track in een
  * lichtere stap van dezelfde blauwe ramp, zodat de stand over de hele balk
  * leesbaar blijft. Bereikt hij het doel, dan schakelt de vulling naar groen
@@ -9,12 +9,14 @@ import { money, moneyShort } from "@/lib/format";
  */
 export function PotMeter({
   pot,
-  paid,
+  pending,
   target,
   seasonName,
 }: {
+  /** Wat er effectief in de kas zit: de som van alle saldo's. */
   pot: number;
-  paid: number;
+  /** Bijdragen die nog gestort moeten worden. */
+  pending: number;
   target: number;
   seasonName: string;
 }) {
@@ -28,7 +30,7 @@ export function PotMeter({
       <div className="p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm font-medium text-ink-2">
-            De pot · {seasonName}
+            In de pot · {seasonName}
           </p>
           {reached ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-good/12 px-3 py-1 text-xs font-semibold text-ink">
@@ -38,7 +40,7 @@ export function PotMeter({
               >
                 ✓
               </span>
-              Streefbedrag gehaald
+              Spaardoel gehaald
             </span>
           ) : null}
         </div>
@@ -49,11 +51,11 @@ export function PotMeter({
         <p className="mt-1.5 text-sm text-ink-2">
           {safeTarget > 0 ? (
             <>
-              van {moneyShort(safeTarget)} streefbedrag
+              van {moneyShort(safeTarget)} spaardoel
               {reached ? null : <> · nog {money(remaining)} te gaan</>}
             </>
           ) : (
-            <>Nog geen streefbedrag ingesteld</>
+            <>Nog geen spaardoel ingesteld</>
           )}
         </p>
 
@@ -76,9 +78,7 @@ export function PotMeter({
           </div>
           <div className="mt-2 flex justify-between text-xs text-ink-muted tabular">
             <span>{moneyShort(0)}</span>
-            <span className="font-semibold text-ink-2">
-              {Math.round(pct)}%
-            </span>
+            <span className="font-semibold text-ink-2">{Math.round(pct)}%</span>
             <span>{safeTarget > 0 ? moneyShort(safeTarget) : "—"}</span>
           </div>
         </div>
@@ -86,13 +86,15 @@ export function PotMeter({
 
       <div className="grid grid-cols-2 gap-px border-t border-line bg-line">
         <div className="bg-surface px-6 py-4">
-          <p className="text-xs text-ink-muted">Al ontvangen door de kas</p>
-          <p className="mt-0.5 text-lg font-semibold text-ink">{money(paid)}</p>
+          <p className="text-xs text-ink-muted">Nog te storten door de leden</p>
+          <p className="mt-0.5 text-lg font-semibold text-ink">
+            {money(pending)}
+          </p>
         </div>
         <div className="bg-surface px-6 py-4">
-          <p className="text-xs text-ink-muted">Nog te innen</p>
+          <p className="text-xs text-ink-muted">Samen straks</p>
           <p className="mt-0.5 text-lg font-semibold text-ink">
-            {money(Math.max(pot - paid, 0))}
+            {money(pot + pending)}
           </p>
         </div>
       </div>

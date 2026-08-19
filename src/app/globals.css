@@ -31,6 +31,8 @@
   --good-text: #006300;
   --warning: #fab219;
   --critical: #d03b3b;
+
+  --brand: #c8102e; /* Amigo's-rood */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,6 +62,8 @@
     --good-text: #0ca30c;
     --warning: #fab219;
     --critical: #d03b3b;
+
+    --brand: #ff5a5a;
   }
 }
 
@@ -83,6 +87,7 @@
   --color-good-text: var(--good-text);
   --color-warning: var(--warning);
   --color-critical: var(--critical);
+  --color-brand: var(--brand);
 
   --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
