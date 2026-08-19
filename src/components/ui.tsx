@@ -18,7 +18,7 @@ export function CardTitle({
   hint?: ReactNode;
 }) {
   return (
-    <div className="mb-4 flex items-baseline justify-between gap-3">
+    <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
       <h2 className="text-base font-semibold text-ink">{children}</h2>
       {hint ? <p className="text-xs text-ink-muted">{hint}</p> : null}
     </div>

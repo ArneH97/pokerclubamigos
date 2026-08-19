@@ -60,7 +60,7 @@ export default async function FinancienPage() {
         Financiën
       </PageTitle>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatTile
           label="In de pot"
           value={money(num(totals.pot))}
@@ -104,7 +104,54 @@ export default async function FinancienPage() {
           {ledger.length === 0 ? (
             <Empty>Nog geen leden.</Empty>
           ) : (
-            <div className="overflow-x-auto">
+            <ul className="space-y-3 md:hidden">
+              {ledger.map((m) => (
+                <li key={m.member_id} className="rounded-2xl border border-line p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="min-w-0 truncate font-semibold text-ink">
+                      {m.display_name}
+                      {m.is_active ? null : (
+                        <span className="ml-2 text-xs font-normal text-ink-muted">
+                          non-actief
+                        </span>
+                      )}
+                    </span>
+                    <ShareRowForm memberId={m.member_id} current={num(m.aandeel)} />
+                  </div>
+
+                  <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
+                    {[
+                      ["Nog te ontvangen", money(m.openstaand)],
+                      ["Al ontvangen", money(m.ontvangen)],
+                      ["Verbruikt", money(m.verbruikt)],
+                    ].map(([k, v]) => (
+                      <div key={k} className="rounded-xl bg-surface-2 px-2 py-2">
+                        <dt className="text-[11px] leading-tight text-ink-muted">{k}</dt>
+                        <dd className="mt-0.5 text-sm font-semibold text-ink tabular">
+                          {v}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+
+                  {num(m.openstaand) > 0 && season ? (
+                    <form action={markMemberPaidAction} className="mt-3">
+                      <input type="hidden" name="member_id" value={m.member_id} />
+                      <input type="hidden" name="season_id" value={season.id} />
+                      <button className="w-full rounded-full border border-line py-2 text-sm font-medium text-ink-2">
+                        Heb ik ontvangen
+                      </button>
+                    </form>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {ledger.length === 0 ? (
+            <Empty>Nog geen leden.</Empty>
+          ) : (
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-xs text-ink-muted">

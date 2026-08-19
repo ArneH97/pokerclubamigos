@@ -38,7 +38,72 @@ export default async function LedenPage() {
           {members.length === 0 ? (
             <Empty>Nog geen leden.</Empty>
           ) : (
-            <div className="overflow-x-auto">
+            <ul className="space-y-3 lg:hidden">
+              {members.map((m) => (
+                <li key={m.id} className="rounded-2xl border border-line p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-ink">
+                        {m.nickname?.trim() || m.full_name}
+                      </p>
+                      <p className="truncate text-xs text-ink-muted">
+                        {m.nickname?.trim() ? `${m.full_name} · ` : ""}
+                        {m.email}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                        m.role === "admin"
+                          ? "bg-brand/12 text-ink"
+                          : "bg-surface-2 text-ink-2"
+                      }`}
+                    >
+                      {m.role === "admin" ? "beheerder" : "lid"}
+                    </span>
+                  </div>
+
+                  {m.id === me.id ? (
+                    <p className="mt-3 text-xs text-ink-muted">Dat ben jij.</p>
+                  ) : (
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <form action={setMemberRoleAction}>
+                        <input type="hidden" name="id" value={m.id} />
+                        <input
+                          type="hidden"
+                          name="role"
+                          value={m.role === "admin" ? "member" : "admin"}
+                        />
+                        <button className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink-2">
+                          {m.role === "admin" ? "maak lid" : "maak beheerder"}
+                        </button>
+                      </form>
+                      <form action={setMemberActiveAction}>
+                        <input type="hidden" name="id" value={m.id} />
+                        <input
+                          type="hidden"
+                          name="is_active"
+                          value={m.is_active ? "false" : "true"}
+                        />
+                        <button className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink-2">
+                          {m.is_active ? "op non-actief" : "opnieuw actief"}
+                        </button>
+                      </form>
+                      <ResetPasswordButton
+                        id={m.id}
+                        name={m.nickname?.trim() || m.full_name}
+                      />
+                      <DeleteMemberButton id={m.id} />
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {members.length === 0 ? (
+            <Empty>Nog geen leden.</Empty>
+          ) : (
+            <div className="hidden overflow-x-auto lg:block">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-xs text-ink-muted">

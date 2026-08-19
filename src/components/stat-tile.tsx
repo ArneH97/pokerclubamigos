@@ -27,12 +27,12 @@ export function StatTile({
   accent?: Accent;
 }) {
   return (
-    <div className="card p-4 sm:p-5">
+    <div className="card p-3.5 sm:p-5">
       <div className="flex items-center gap-2">
-        <span aria-hidden className={`h-2.5 w-2.5 rounded-full ${dot[accent]}`} />
-        <span className="text-sm text-ink-2">{label}</span>
+        <span aria-hidden className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot[accent]}`} />
+        <span className="text-xs leading-tight text-ink-2 sm:text-sm">{label}</span>
       </div>
-      <p className="mt-2 text-2xl font-semibold text-ink sm:text-[1.75rem]">
+      <p className="mt-1.5 text-xl font-semibold tracking-tight text-ink sm:mt-2 sm:text-[1.75rem]">
         {value}
       </p>
       {detail ? <p className="mt-1 text-xs text-ink-muted">{detail}</p> : null}

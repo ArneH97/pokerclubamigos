@@ -8,15 +8,15 @@
 :root {
   color-scheme: light;
 
-  --plane: #f7f4ee;
-  --plane-2: #efe9de;
-  --surface: #fcfcfb;
-  --surface-2: #f4f1ea;
+  --plane: #f8f1e4;
+  --plane-2: #efe4d0;
+  --surface: #fffdf7;
+  --surface-2: #f5ece0;
 
   --ink: #0b0b0b;
   --ink-2: #52514e;
   --ink-muted: #898781;
-  --line: #e1e0d9;
+  --line: #e6ddcd;
   --hairline: rgba(11, 11, 11, 0.1);
 
   --s1: #2a78d6; /* blauw   — hoofdaccent, pot */
@@ -90,6 +90,7 @@
   --color-brand: var(--brand);
 
   --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-hand: "Caveat", "Segoe Script", cursive;
 }
 
 html {
@@ -107,24 +108,24 @@ body {
   background-color: var(--plane);
   background-image:
     radial-gradient(
-      44rem 44rem at 10% -10%,
-      color-mix(in oklab, var(--s1) 26%, transparent),
-      transparent 68%
+      42rem 42rem at 8% -12%,
+      color-mix(in oklab, var(--brand) 22%, transparent),
+      transparent 66%
     ),
     radial-gradient(
-      38rem 38rem at 95% 2%,
-      color-mix(in oklab, var(--s2) 24%, transparent),
-      transparent 68%
+      36rem 36rem at 96% 0%,
+      color-mix(in oklab, var(--s4) 30%, transparent),
+      transparent 66%
     ),
     radial-gradient(
-      42rem 42rem at 72% 98%,
+      40rem 40rem at 74% 98%,
       color-mix(in oklab, var(--s3) 20%, transparent),
-      transparent 68%
+      transparent 66%
     ),
     radial-gradient(
-      30rem 30rem at 22% 88%,
-      color-mix(in oklab, var(--s4) 18%, transparent),
-      transparent 68%
+      30rem 30rem at 18% 92%,
+      color-mix(in oklab, var(--s2) 20%, transparent),
+      transparent 66%
     );
 }
 
@@ -132,7 +133,14 @@ body {
   background: var(--surface);
   border: 1px solid var(--hairline);
   border-radius: 1.5rem;
-  box-shadow: 0 1px 2px rgba(11, 11, 11, 0.04);
+  box-shadow: 0 2px 6px rgba(90, 60, 20, 0.05);
+}
+
+/* Handschrift, voor koppen die niet zakelijk mogen aanvoelen. */
+.hand {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 
 .tabular {
