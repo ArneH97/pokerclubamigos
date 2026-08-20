@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createMailClient } from "@/lib/supabase/otp";
 import { getSiteUrl } from "@/lib/site";
 
 export type FormState = { error?: string; success?: string } | null;
@@ -39,11 +40,11 @@ export async function requestResetAction(
   const email = String(formData.get("email") ?? "").trim();
   if (!email) return { error: "Vul eerst je e-mailadres in." };
 
-  const supabase = await createClient();
+  const mail = createMailClient();
   const siteUrl = await getSiteUrl();
 
-  await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${siteUrl}/auth/confirm?next=/wachtwoord`,
+  await mail.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteUrl}/uitnodiging?next=/wachtwoord`,
   });
 
   // Bewust altijd dezelfde boodschap: zo verklap je niet welke adressen een

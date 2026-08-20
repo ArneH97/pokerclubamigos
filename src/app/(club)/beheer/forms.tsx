@@ -10,12 +10,14 @@ import {
   createMemberAction,
   createProposalAction,
   deleteMemberAction,
+  makeAccessLinksAction,
   resendInviteAction,
   resetMemberPasswordAction,
   saveSeasonAction,
   setMemberShareAction,
   type AdminFormState,
   type BulkState,
+  type LinkState,
 } from "./actions";
 import { Field, Notice, buttonClass, inputClass } from "@/components/ui";
 import { money } from "@/lib/format";
@@ -750,6 +752,107 @@ export function BulkResendForm() {
         </Field>
         <Submit label="Mail versturen" />
       </form>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Toegangslinks zonder mail                                                  */
+/* -------------------------------------------------------------------------- */
+
+function LinkLijst({ links }: { links: NonNullable<LinkState>["links"] }) {
+  if (!links?.length) return null;
+
+  const alles = links.map((l) => `${l.naam}: ${l.url}`).join("\n\n");
+
+  return (
+    <div className="space-y-3">
+      <Notice tone="success">
+        {links.length} link{links.length === 1 ? "" : "s"} klaar. Stuur ze door
+        via WhatsApp — elke link werkt één keer.
+      </Notice>
+
+      <ul className="space-y-2">
+        {links.map((l) => (
+          <li key={l.email} className="rounded-2xl border border-line p-3">
+            <p className="text-sm font-semibold text-ink">{l.naam}</p>
+            <p className="mb-2 text-xs text-ink-muted">{l.email}</p>
+            <input
+              readOnly
+              value={l.url}
+              onFocus={(e) => e.currentTarget.select()}
+              className="w-full rounded-xl border border-line bg-surface-2 px-3 py-2 text-xs text-ink-2"
+            />
+          </li>
+        ))}
+      </ul>
+
+      {links.length > 1 ? (
+        <div>
+          <p className="mb-1.5 text-sm font-medium text-ink-2">Alles in één keer</p>
+          <textarea
+            readOnly
+            rows={5}
+            value={alles}
+            onFocus={(e) => e.currentTarget.select()}
+            className="w-full rounded-xl border border-line bg-surface-2 px-3 py-2 text-xs text-ink-2"
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function AccessLinkButton({ email }: { email: string }) {
+  const [state, action] = useActionState<LinkState, FormData>(
+    makeAccessLinksAction,
+    null,
+  );
+
+  return (
+    <div>
+      <form action={action}>
+        <input type="hidden" name="email" value={email} />
+        <button className="rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-surface-2">
+          link maken
+        </button>
+      </form>
+      {state?.error ? (
+        <p className="mt-1.5 max-w-xs text-xs text-critical">{state.error}</p>
+      ) : null}
+      {state?.links?.length ? (
+        <input
+          readOnly
+          value={state.links[0].url}
+          onFocus={(e) => e.currentTarget.select()}
+          className="mt-1.5 w-56 rounded-lg border border-line bg-surface-2 px-2 py-1 text-[11px] text-ink-2"
+        />
+      ) : null}
+    </div>
+  );
+}
+
+export function BulkLinksForm() {
+  const [state, action] = useActionState<LinkState, FormData>(
+    makeAccessLinksAction,
+    null,
+  );
+
+  return (
+    <div className="space-y-4">
+      {state?.error ? <Notice tone="error">{state.error}</Notice> : null}
+
+      <form action={action} className="flex flex-wrap items-end gap-3">
+        <Field label="Voor wie?">
+          <select className={inputClass} name="bereik" defaultValue="nieuw">
+            <option value="nieuw">Wie nog niet binnen is</option>
+            <option value="iedereen">Alle actieve leden</option>
+          </select>
+        </Field>
+        <Submit label="Links maken" />
+      </form>
+
+      <LinkLijst links={state?.links} />
     </div>
   );
 }

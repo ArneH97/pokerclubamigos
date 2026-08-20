@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/session";
 import { getSiteUrl } from "@/lib/site";
 import { tempPassword } from "@/lib/password";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createMailClient } from "@/lib/supabase/otp";
 import { createClient } from "@/lib/supabase/server";
 
 export type AdminFormState = { error?: string; success?: string } | null;
@@ -704,10 +705,10 @@ export async function resendInviteAction(
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   if (!email) return { error: "Geen e-mailadres bekend voor dit lid." };
 
-  const supabase = await createClient();
+  const mail = createMailClient();
   const siteUrl = await getSiteUrl();
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  const { error } = await mail.auth.resetPasswordForEmail(email, {
     redirectTo: `${siteUrl}/uitnodiging?next=/wachtwoord`,
   });
 
@@ -724,6 +725,7 @@ export async function bulkResendAction(
   const bereik = String(formData.get("bereik") ?? "nieuw");
 
   const supabase = await createClient();
+  const mail = createMailClient();
   const siteUrl = await getSiteUrl();
 
   let query = supabase
@@ -746,7 +748,7 @@ export async function bulkResendAction(
   const mislukt: string[] = [];
 
   for (const lid of leden) {
-    const { error: mailError } = await supabase.auth.resetPasswordForEmail(
+    const { error: mailError } = await mail.auth.resetPasswordForEmail(
       lid.email,
       { redirectTo: `${siteUrl}/uitnodiging?next=/wachtwoord` },
     );
@@ -768,4 +770,95 @@ export async function bulkResendAction(
         ? `${gelukt} mail${gelukt === 1 ? "" : "s"} verstuurd.`
         : `${gelukt} verstuurd, ${mislukt.length} mislukt: ${mislukt.join(", ")}. Vaak is dat de uurlimiet van Supabase — probeer die straks opnieuw.`,
   };
+}
+
+// ---------------------------------------------------------------------------
+//  Toegangslinks maken (zonder mail)
+// ---------------------------------------------------------------------------
+
+export type LinkState = {
+  error?: string;
+  links?: { naam: string; email: string; url: string }[];
+} | null;
+
+/**
+ * Maakt een verse aanmeldlink zonder mail te versturen. Handig als de mail
+ * blijft haperen: je stuurt de link gewoon via WhatsApp door.
+ */
+export async function makeAccessLinksAction(
+  _prev: LinkState,
+  formData: FormData,
+): Promise<LinkState> {
+  await requireAdmin();
+
+  const bereik = String(formData.get("bereik") ?? "nieuw");
+  const enkelEmail = String(formData.get("email") ?? "").trim().toLowerCase();
+
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return { error: "SUPABASE_SERVICE_ROLE_KEY ontbreekt bij de omgevingsvariabelen." };
+  }
+
+  const supabase = await createClient();
+  const siteUrl = await getSiteUrl();
+
+  let leden: { email: string; full_name: string; nickname: string | null }[];
+
+  if (enkelEmail) {
+    const { data, error } = await supabase
+      .from("members")
+      .select("email, full_name, nickname")
+      .eq("email", enkelEmail)
+      .limit(1);
+    if (error) return { error: error.message };
+    leden = data ?? [];
+  } else {
+    let query = supabase
+      .from("members")
+      .select("email, full_name, nickname")
+      .eq("is_active", true)
+      .order("full_name");
+    if (bereik === "nieuw") query = query.or("nickname.is.null,nickname.eq.");
+
+    const { data, error } = await query;
+    if (error) return { error: error.message };
+    leden = data ?? [];
+  }
+
+  if (leden.length === 0) {
+    return { error: "Er is niemand die een link nodig heeft." };
+  }
+
+  const links: { naam: string; email: string; url: string }[] = [];
+  const mislukt: string[] = [];
+
+  for (const lid of leden) {
+    const { data, error } = await admin.auth.admin.generateLink({
+      type: "recovery",
+      email: lid.email,
+      options: { redirectTo: `${siteUrl}/uitnodiging?next=/wachtwoord` },
+    });
+
+    const token = data?.properties?.hashed_token;
+    if (error || !token) {
+      mislukt.push(lid.email);
+      continue;
+    }
+
+    links.push({
+      naam: lid.nickname?.trim() || lid.full_name,
+      email: lid.email,
+      url: `${siteUrl}/uitnodiging?token_hash=${token}&type=recovery&next=/wachtwoord`,
+    });
+  }
+
+  if (links.length === 0) {
+    return {
+      error: `Links maken lukte niet${mislukt.length ? ` voor ${mislukt.join(", ")}` : ""}.`,
+    };
+  }
+
+  return { links };
 }

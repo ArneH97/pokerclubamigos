@@ -1,5 +1,7 @@
 import { setMemberActiveAction, setMemberRoleAction } from "../actions";
 import {
+  AccessLinkButton,
+  BulkLinksForm,
   BulkPasswordsForm,
   BulkResendForm,
   DeleteMemberButton,
@@ -80,24 +82,35 @@ export default async function LedenPage() {
             Iedereen binnen krijgen
           </CardTitle>
 
-          <div className="rounded-2xl border border-line p-4">
+          <div className="rounded-2xl border border-s1/30 bg-s1/6 p-4">
             <p className="text-sm font-semibold text-ink">
-              1. Stuur de mail opnieuw
+              1. Stuur de link zelf door
             </p>
             <p className="mb-4 mt-1 text-sm text-ink-2">
-              Iedereen krijgt een verse link waarmee hij een wachtwoord kiest.
-              Dit mag je zo vaak herhalen als nodig.
+              Maakt een verse aanmeldlink per persoon, zonder mail. Plak ze in
+              WhatsApp — dan kan er onderweg niets misgaan.
+            </p>
+            <BulkLinksForm />
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-line p-4">
+            <p className="text-sm font-semibold text-ink">
+              2. Of laat de mail het doen
+            </p>
+            <p className="mb-4 mt-1 text-sm text-ink-2">
+              Iedereen krijgt een verse link per e-mail. Dit mag je zo vaak
+              herhalen als nodig, maar hangt af van de mailinstellingen.
             </p>
             <BulkResendForm />
           </div>
 
           <div className="mt-4 rounded-2xl border border-line p-4">
             <p className="text-sm font-semibold text-ink">
-              2. Of geef een startwachtwoord mee
+              3. Of geef een startwachtwoord mee
             </p>
             <p className="mb-4 mt-1 text-sm text-ink-2">
-              Werkt de mail niet? Zet dan startwachtwoorden klaar en stuur die
-              via WhatsApp door. Geen enkele link die kan sneuvelen.
+              Geen link, gewoon een wachtwoord dat je doorstuurt. Verloopt
+              nooit.
             </p>
             <BulkPasswordsForm />
           </div>
@@ -176,6 +189,7 @@ export default async function LedenPage() {
                           {m.is_active ? "op non-actief" : "opnieuw actief"}
                         </button>
                       </form>
+                      <AccessLinkButton email={m.email} />
                       <ResendInviteButton email={m.email} />
                       <ResetPasswordButton
                         id={m.id}
@@ -269,7 +283,9 @@ export default async function LedenPage() {
                           <span className="text-xs text-ink-muted">—</span>
                         ) : (
                           <div className="space-y-2">
-                            <ResendInviteButton email={m.email} />
+                            <AccessLinkButton email={m.email} />
+                            <AccessLinkButton email={m.email} />
+                      <ResendInviteButton email={m.email} />
                             <ResetPasswordButton
                               id={m.id}
                               name={m.nickname?.trim() || m.full_name}
