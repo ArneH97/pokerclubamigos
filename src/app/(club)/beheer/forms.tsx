@@ -142,8 +142,11 @@ export function ResetPasswordButton({
       <form action={action}>
         <input type="hidden" name="id" value={id} />
         <input type="hidden" name="name" value={name} />
-        <button className="rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-surface-2">
-          nieuw wachtwoord
+        <button
+          title="Zet een startwachtwoord klaar dat je zelf doorstuurt"
+          className="whitespace-nowrap rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-surface-2"
+        >
+          wachtwoord
         </button>
       </form>
       {state?.success ? (
@@ -718,8 +721,11 @@ export function ResendInviteButton({ email }: { email: string }) {
     <div>
       <form action={action}>
         <input type="hidden" name="email" value={email} />
-        <button className="rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-surface-2">
-          mail opnieuw
+        <button
+          title="Stuur de aanmeldmail opnieuw naar dit adres"
+          className="whitespace-nowrap rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-surface-2"
+        >
+          mail
         </button>
       </form>
       {state?.success ? (
@@ -813,8 +819,11 @@ export function AccessLinkButton({ email }: { email: string }) {
     <div>
       <form action={action}>
         <input type="hidden" name="email" value={email} />
-        <button className="rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-surface-2">
-          link maken
+        <button
+          title="Maak een aanmeldlink die je zelf doorstuurt, bv. via WhatsApp"
+          className="whitespace-nowrap rounded-full border border-s1/40 bg-s1/10 px-2.5 py-1 text-xs font-semibold text-ink hover:bg-s1/15"
+        >
+          link
         </button>
       </form>
       {state?.error ? (

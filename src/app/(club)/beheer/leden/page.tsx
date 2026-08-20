@@ -282,10 +282,9 @@ export default async function LedenPage() {
                         {m.id === me.id ? (
                           <span className="text-xs text-ink-muted">—</span>
                         ) : (
-                          <div className="space-y-2">
+                          <div className="flex flex-wrap items-start gap-x-2 gap-y-1.5">
                             <AccessLinkButton email={m.email} />
-                            <AccessLinkButton email={m.email} />
-                      <ResendInviteButton email={m.email} />
+                            <ResendInviteButton email={m.email} />
                             <ResetPasswordButton
                               id={m.id}
                               name={m.nickname?.trim() || m.full_name}
