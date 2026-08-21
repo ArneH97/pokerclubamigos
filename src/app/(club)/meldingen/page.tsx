@@ -29,6 +29,7 @@ function tekst(n: NotificationItem) {
   if (n.kind === "like") return `${wie} vindt jouw cash leuk.`;
   if (n.kind === "reactie")
     return `${wie} reageerde: “${(n.comment_body ?? "").slice(0, 140)}”`;
+  if (num(n.cashout) <= 0) return `${wie} speelde en eindigde niet ITM.`;
   return `${wie} cashte ${money(num(n.cashout))} en stak ${money(
     num(n.contribution),
   )} in de pot.`;

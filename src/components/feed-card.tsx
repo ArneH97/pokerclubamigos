@@ -44,10 +44,21 @@ export function FeedCard({
 }) {
   const profit = num(item.profit);
   const won = profit > 0;
+  // Eerste plaats is de echte winnaar; wie geld meenam zonder te winnen is
+  // wel in the money geëindigd. Allebei feest, het ene net iets luider.
+  const kampioen = item.finish_position === 1;
+  const plaats = item.finish_position;
 
   return (
-    <article className="card overflow-hidden">
-      <div className="p-5 sm:p-6">
+    <article className={`card relative overflow-hidden ${won ? "card-win" : ""}`}>
+      {won ? (
+        <>
+          <div className="win-lint" aria-hidden />
+          <Confetti />
+        </>
+      ) : null}
+
+      <div className="relative p-5 sm:p-6">
         <header className="flex items-start gap-3">
           <Avatar name={item.display_name} id={item.member_id} />
           <div className="min-w-0 flex-1">
@@ -77,11 +88,27 @@ export function FeedCard({
             </>
           ) : (
             <>
-              speelde voor <strong>{money(item.buyin)}</strong> en kwam er niet
-              door
+              speelde voor <strong>{money(item.buyin)}</strong> en eindigde niet
+              ITM
             </>
           )}
         </p>
+
+        {won ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="win-badge inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold">
+              <Trophy />
+              {kampioen
+                ? "Winnaar"
+                : plaats
+                  ? `${plaats}e plaats · ITM`
+                  : "In the money"}
+            </span>
+            <span className="inline-flex items-center rounded-full border border-line bg-surface px-3 py-1 text-sm font-semibold text-ink tabular">
+              +{money(profit)}
+            </span>
+          </div>
+        ) : null}
 
         {item.note?.trim() ? (
           <p className="mt-3 rounded-2xl bg-surface-2 px-4 py-3 text-sm text-ink-2">
@@ -102,7 +129,7 @@ export function FeedCard({
               {money(item.cashout)}
             </dd>
           </div>
-          <div className="bg-surface px-2 py-3">
+          <div className={`px-2 py-3 ${won ? "bg-s4/12" : "bg-surface"}`}>
             <dt className="text-[11px] text-ink-muted">In de pot</dt>
             <dd className="mt-0.5 text-sm font-semibold text-ink tabular">
               {money(item.contribution)}
@@ -194,6 +221,55 @@ export function FeedCard({
         </div>
       )}
     </article>
+  );
+}
+
+function Trophy() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className="h-4 w-4 text-s4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" />
+      <path d="M7 6H4.5v1a3.5 3.5 0 0 0 3 3.46" />
+      <path d="M17 6h2.5v1a3.5 3.5 0 0 1-3 3.46" />
+      <path d="M12 14v3.5" />
+      <path d="M8.5 20.5h7" />
+      <path d="M9.5 20.5c.4-1.9 1-3 2.5-3s2.1 1.1 2.5 3" />
+    </svg>
+  );
+}
+
+/**
+ * Wat snippers in de rechterbovenhoek van een winnende post. Puur versiering,
+ * dus verborgen voor schermlezers en niet aanklikbaar.
+ */
+function Confetti() {
+  return (
+    <svg
+      viewBox="0 0 160 90"
+      aria-hidden
+      className="pointer-events-none absolute right-0 top-0 h-24 w-44 opacity-60"
+      fill="none"
+    >
+      <rect x="18" y="14" width="7" height="3" rx="1.5" fill="var(--s2)" transform="rotate(-24 18 14)" />
+      <rect x="52" y="30" width="6" height="3" rx="1.5" fill="var(--s1)" transform="rotate(38 52 30)" />
+      <rect x="96" y="12" width="8" height="3" rx="1.5" fill="var(--brand)" transform="rotate(-14 96 12)" />
+      <rect x="120" y="44" width="6" height="3" rx="1.5" fill="var(--s3)" transform="rotate(52 120 44)" />
+      <rect x="140" y="18" width="7" height="3" rx="1.5" fill="var(--s4)" transform="rotate(-40 140 18)" />
+      <rect x="74" y="56" width="6" height="3" rx="1.5" fill="var(--s5)" transform="rotate(20 74 56)" />
+      <circle cx="38" cy="46" r="2.2" fill="var(--s4)" />
+      <circle cx="112" cy="26" r="2" fill="var(--s5)" />
+      <circle cx="150" cy="58" r="2.2" fill="var(--s2)" />
+      <circle cx="66" cy="16" r="1.8" fill="var(--s3)" />
+      <circle cx="88" cy="42" r="1.8" fill="var(--s1)" />
+    </svg>
   );
 }
 
