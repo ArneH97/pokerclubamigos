@@ -1,6 +1,7 @@
 import { setMemberActiveAction, setMemberRoleAction } from "../actions";
 import {
   AccessLinkButton,
+  AddEmailButton,
   BulkLinksForm,
   BulkPasswordsForm,
   BulkResendForm,
@@ -48,6 +49,7 @@ export default async function LedenPage() {
     bepaalStatus({
       heeftNickname: Boolean(m.nickname?.trim()),
       laatsteAanmelding: aanmeldingen.get(m.id)?.last_sign_in_at ?? null,
+      mailOntbreekt: m.email_pending,
     });
 
   const telling = members.reduce(
@@ -55,7 +57,10 @@ export default async function LedenPage() {
       acc[statusVan(m)] += 1;
       return acc;
     },
-    { actief: 0, aangemeld: 0, uitgenodigd: 0 } as Record<LidStatus, number>,
+    { actief: 0, aangemeld: 0, uitgenodigd: 0, geen_mail: 0 } as Record<
+      LidStatus,
+      number
+    >,
   );
 
   return (
@@ -71,7 +76,10 @@ export default async function LedenPage() {
           <Notice>
             Bij de eerste aanmelding kiest het lid zelf zijn spelernaam en een
             eigen wachtwoord. Komt de uitnodiging niet aan, kies dan voor een
-            startwachtwoord en stuur dat via WhatsApp door.
+            startwachtwoord en stuur dat via WhatsApp door. Heb je enkel een
+            naam? Kies <strong>nog geen mailadres</strong> — hij staat dan al in
+            de lijst en telt mee voor de pot, en je vult het adres later aan met
+            de knop <strong>mailadres toevoegen</strong>.
           </Notice>
         </div>
       </Card>
@@ -120,7 +128,9 @@ export default async function LedenPage() {
       <div className="mt-6">
         <Card>
           <CardTitle
-            hint={`${telling.actief} actief · ${telling.aangemeld} half · ${telling.uitgenodigd} wacht nog`}
+            hint={`${telling.actief} actief · ${telling.aangemeld} half · ${telling.uitgenodigd} wacht nog${
+              telling.geen_mail ? ` · ${telling.geen_mail} zonder mail` : ""
+            }`}
           >
             Ledenlijst
           </CardTitle>
@@ -137,7 +147,7 @@ export default async function LedenPage() {
                       </p>
                       <p className="truncate text-xs text-ink-muted">
                         {m.nickname?.trim() ? `${m.full_name} · ` : ""}
-                        {m.email}
+                        {m.email_pending ? "nog geen mailadres" : m.email}
                       </p>
                     </div>
                     <span
@@ -189,12 +199,22 @@ export default async function LedenPage() {
                           {m.is_active ? "op non-actief" : "opnieuw actief"}
                         </button>
                       </form>
-                      <AccessLinkButton email={m.email} />
-                      <ResendInviteButton email={m.email} />
-                      <ResetPasswordButton
+                      <AddEmailButton
                         id={m.id}
                         name={m.nickname?.trim() || m.full_name}
+                        current={m.email}
+                        pending={m.email_pending}
                       />
+                      {m.email_pending ? null : (
+                        <>
+                          <AccessLinkButton email={m.email} />
+                          <ResendInviteButton email={m.email} />
+                          <ResetPasswordButton
+                            id={m.id}
+                            name={m.nickname?.trim() || m.full_name}
+                          />
+                        </>
+                      )}
                       <DeleteMemberButton id={m.id} />
                     </div>
                   )}
@@ -232,7 +252,15 @@ export default async function LedenPage() {
                         )}
                       </td>
                       <td className="py-3 pr-3 text-ink-2">{m.full_name}</td>
-                      <td className="py-3 pr-3 text-ink-2">{m.email}</td>
+                      <td className="py-3 pr-3 text-ink-2">
+                        {m.email_pending ? (
+                          <span className="text-xs text-ink-muted">
+                            nog geen mailadres
+                          </span>
+                        ) : (
+                          m.email
+                        )}
+                      </td>
                       <td className="py-3 pr-3">
                         {m.id === me.id ? (
                           <span className="text-xs text-ink-2">beheerder (jij)</span>
@@ -283,12 +311,22 @@ export default async function LedenPage() {
                           <span className="text-xs text-ink-muted">—</span>
                         ) : (
                           <div className="flex flex-wrap items-start gap-x-2 gap-y-1.5">
-                            <AccessLinkButton email={m.email} />
-                            <ResendInviteButton email={m.email} />
-                            <ResetPasswordButton
+                            <AddEmailButton
                               id={m.id}
                               name={m.nickname?.trim() || m.full_name}
+                              current={m.email}
+                              pending={m.email_pending}
                             />
+                            {m.email_pending ? null : (
+                              <>
+                                <AccessLinkButton email={m.email} />
+                                <ResendInviteButton email={m.email} />
+                                <ResetPasswordButton
+                                  id={m.id}
+                                  name={m.nickname?.trim() || m.full_name}
+                                />
+                              </>
+                            )}
                             <DeleteMemberButton id={m.id} />
                           </div>
                         )}

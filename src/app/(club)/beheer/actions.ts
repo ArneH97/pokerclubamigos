@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/session";
 import { getSiteUrl } from "@/lib/site";
@@ -32,10 +33,31 @@ function amount(value: FormDataEntryValue | null) {
 // ---------------------------------------------------------------------------
 
 /**
- * Voegt een lid toe. Twee manieren:
+ * Elk lid hangt aan een account, en zo'n account heeft altijd een adres nodig.
+ * Voor iemand van wie je enkel de naam kent, maken we er zelf één op een
+ * subdomein zonder mailserver: daar kan nooit per ongeluk iets naartoe.
+ */
+const GEEN_MAIL_DOMEIN = "nog-geen-mail.pokerclubamigos.be";
+
+function plaatshouderAdres(fullName: string) {
+  const slug =
+    fullName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ".")
+      .replace(/^\.|\.$/g, "")
+      .slice(0, 28) || "amigo";
+  return `${slug}.${randomUUID().slice(0, 8)}@${GEEN_MAIL_DOMEIN}`;
+}
+
+/**
+ * Voegt een lid toe. Drie manieren:
  *  · uitnodigen per e-mail — Supabase stuurt de mail (via Resend als SMTP) met
  *    een link waarmee het lid zelf een wachtwoord kiest
  *  · zelf een startwachtwoord doorsturen — handig als de mail niet aankomt
+ *  · zonder mailadres — enkel naam en spelernaam; het adres en het wachtwoord
+ *    vul je later aan bij de ledenlijst
  */
 export async function createMemberAction(
   _prev: AdminFormState,
@@ -43,15 +65,21 @@ export async function createMemberAction(
 ): Promise<AdminFormState> {
   await requireAdmin();
 
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const fullName = String(formData.get("full_name") ?? "").trim();
   const nickname = String(formData.get("nickname") ?? "").trim();
   const role =
     String(formData.get("role") ?? "member") === "admin" ? "admin" : "member";
-  const perMail = String(formData.get("method") ?? "mail") === "mail";
+  const methode = String(formData.get("method") ?? "mail");
+  const zonderMail = methode === "later";
+  const perMail = methode === "mail";
 
-  if (!email.includes("@")) return { error: "Vul een geldig e-mailadres in." };
   if (!fullName) return { error: "Vul de naam van het lid in." };
+
+  const opgegeven = String(formData.get("email") ?? "").trim().toLowerCase();
+  const email = zonderMail ? plaatshouderAdres(fullName) : opgegeven;
+
+  if (!zonderMail && !email.includes("@"))
+    return { error: "Vul een geldig e-mailadres in, of kies “nog geen mailadres”." };
 
   let admin;
   try {
@@ -98,7 +126,9 @@ export async function createMemberAction(
         };
       }
       userId = data.user.id;
-      bericht = `${fullName} staat erbij. Startwachtwoord: ${password} — stuur dat door.`;
+      bericht = zonderMail
+        ? `${fullName} staat erbij, nog zonder mailadres. Vul het later aan bij de ledenlijst — daar zet je meteen ook een wachtwoord klaar.`
+        : `${fullName} staat erbij. Startwachtwoord: ${password} — stuur dat door.`;
     }
   }
 
@@ -110,6 +140,7 @@ export async function createMemberAction(
       nickname: nickname || null,
       role,
       is_active: true,
+      email_pending: zonderMail,
     },
     { onConflict: "id" },
   );
@@ -118,6 +149,91 @@ export async function createMemberAction(
 
   refresh();
   return { success: bericht };
+}
+
+/**
+ * Vult het mailadres aan van een lid dat er nog geen had — of verbetert een
+ * verkeerd getypt adres. Het account krijgt hetzelfde adres, zodat hij er
+ * meteen mee kan inloggen. Daarna kan je in één beweging een startwachtwoord
+ * klaarzetten of de uitnodiging mailen.
+ */
+export async function setMemberEmailAction(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "");
+  const naam = String(formData.get("name") ?? "dit lid");
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const daarna = String(formData.get("daarna") ?? "wachtwoord");
+
+  if (!id) return { error: "Onbekend lid." };
+  if (!email.includes("@") || email.length < 5)
+    return { error: "Vul een geldig e-mailadres in." };
+  if (email.endsWith(`@${GEEN_MAIL_DOMEIN}`))
+    return { error: "Dat is het plaatshouder-adres. Vul het echte adres in." };
+
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    return { error: "SUPABASE_SERVICE_ROLE_KEY ontbreekt." };
+  }
+
+  // Twee leden met hetzelfde adres kan niet: dan zou de tweede het account
+  // van de eerste overnemen.
+  const { data: bezet, error: lookupError } = await admin.rpc(
+    "find_user_id_by_email",
+    { p_email: email },
+  );
+  if (lookupError) return { error: `Opzoeken mislukte: ${lookupError.message}` };
+  if (bezet && bezet !== id)
+    return { error: "Dat adres hoort al bij een ander lid." };
+
+  const { error: authError } = await admin.auth.admin.updateUserById(id, {
+    email,
+    email_confirm: true,
+  });
+  if (authError)
+    return { error: `Het account bijwerken lukte niet: ${authError.message}` };
+
+  const { error: memberError } = await admin
+    .from("members")
+    .update({ email, email_pending: false })
+    .eq("id", id);
+  if (memberError)
+    return { error: `Bewaren mislukte: ${memberError.message}` };
+
+  if (daarna === "wachtwoord") {
+    const password = tempPassword();
+    const { error } = await admin.auth.admin.updateUserById(id, { password });
+    refresh();
+    if (error)
+      return {
+        error: `${email} is bewaard, maar het wachtwoord zetten lukte niet: ${error.message}`,
+      };
+    return {
+      success: `${naam}: ${email} · wachtwoord ${password} — stuur allebei door.`,
+    };
+  }
+
+  if (daarna === "mail") {
+    const mail = createMailClient();
+    const siteUrl = await getSiteUrl();
+    const { error } = await mail.auth.resetPasswordForEmail(email, {
+      redirectTo: `${siteUrl}/uitnodiging?next=/wachtwoord`,
+    });
+    refresh();
+    if (error)
+      return {
+        error: `${email} is bewaard, maar de mail versturen lukte niet: ${error.message}`,
+      };
+    return { success: `${email} bewaard en de uitnodiging is onderweg.` };
+  }
+
+  refresh();
+  return { success: `${email} bewaard voor ${naam}.` };
 }
 
 export async function resetMemberPasswordAction(
@@ -267,6 +383,10 @@ export async function saveSeasonAction(
  * Zet het aandeel van één Amigo op een bedrag — zo neemt Guido de Excel over.
  * Onder de motorkap wordt het verschil als correctie weggeschreven, zodat je
  * altijd kan terugvinden wat er gewijzigd is.
+ *
+ * Het bedrag komt bij 'nog te ontvangen' te staan: het telt meteen mee voor
+ * de pot, maar het briefje zit nog niet bij de penningmeester. Vink het later
+ * af met 'heb ik ontvangen'.
  */
 export async function setMemberShareAction(
   _prev: AdminFormState,
@@ -299,6 +419,7 @@ export async function setMemberShareAction(
     amount: verschil,
     kind,
     reason,
+    is_paid: false,
     created_by: member.id,
   });
   if (error) return { error: error.message };
@@ -523,19 +644,51 @@ export async function togglePaidAction(formData: FormData) {
   refresh();
 }
 
+/**
+ * "Heb ik ontvangen" voor één Amigo: zowel zijn openstaande cashes als de
+ * handmatig ingestelde bedragen worden afgevinkt. De pot verandert niet —
+ * enkel de verdeling tussen 'al binnen' en 'nog te ontvangen'.
+ */
 export async function markMemberPaidAction(formData: FormData) {
   await requireAdmin();
   const memberId = String(formData.get("member_id") ?? "");
   const seasonId = String(formData.get("season_id") ?? "");
-  if (!memberId || !seasonId) return;
+  if (!memberId) return;
 
   const supabase = await createClient();
-  await supabase
-    .from("results")
-    .update({ is_paid: true })
-    .eq("member_id", memberId)
-    .eq("season_id", seasonId)
-    .eq("is_paid", false);
+
+  const werk = [
+    supabase
+      .from("member_adjustments")
+      .update({ is_paid: true })
+      .eq("member_id", memberId)
+      .eq("is_paid", false),
+  ];
+
+  if (seasonId) {
+    werk.push(
+      supabase
+        .from("results")
+        .update({ is_paid: true })
+        .eq("member_id", memberId)
+        .eq("season_id", seasonId)
+        .eq("is_paid", false),
+    );
+  }
+
+  await Promise.all(werk);
+  refresh();
+}
+
+/** Eén handmatige aanpassing afvinken of terug openzetten. */
+export async function toggleAdjustmentPaidAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const isPaid = String(formData.get("is_paid") ?? "") === "true";
+  if (!id) return;
+
+  const supabase = await createClient();
+  await supabase.from("member_adjustments").update({ is_paid: isPaid }).eq("id", id);
   refresh();
 }
 
@@ -639,6 +792,9 @@ export async function bulkStartPasswordsAction(
     .from("members")
     .select("id, email, full_name, nickname, role")
     .eq("is_active", true)
+    // Leden zonder echt mailadres kunnen sowieso niet inloggen: eerst het
+    // adres aanvullen bij de ledenlijst.
+    .eq("email_pending", false)
     .order("full_name");
 
   if (bereik === "nieuw") {
@@ -732,6 +888,8 @@ export async function bulkResendAction(
     .from("members")
     .select("email, full_name, nickname")
     .eq("is_active", true)
+    // Naar een plaatshouder-adres vertrekt niets.
+    .eq("email_pending", false)
     .order("full_name");
 
   if (bereik === "nieuw") query = query.or("nickname.is.null,nickname.eq.");
@@ -819,6 +977,8 @@ export async function makeAccessLinksAction(
       .from("members")
       .select("email, full_name, nickname")
       .eq("is_active", true)
+      // Zonder echt adres valt er geen aanmeldlink te maken.
+      .eq("email_pending", false)
       .order("full_name");
     if (bereik === "nieuw") query = query.or("nickname.is.null,nickname.eq.");
 

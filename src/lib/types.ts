@@ -7,6 +7,8 @@ export type Member = {
   nickname: string | null;
   role: Role;
   is_active: boolean;
+  /** True zolang er enkel een plaatshouder-adres is en er geen mail heen mag. */
+  email_pending: boolean;
   created_at: string;
 };
 
@@ -95,6 +97,7 @@ export type MemberAdjustment = {
   amount: number;
   kind: "startsaldo" | "correctie";
   reason: string;
+  is_paid: boolean;
   created_by: string | null;
   created_at: string;
 };

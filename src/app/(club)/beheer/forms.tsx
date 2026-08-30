@@ -14,6 +14,7 @@ import {
   resendInviteAction,
   resetMemberPasswordAction,
   saveSeasonAction,
+  setMemberEmailAction,
   setMemberShareAction,
   type AdminFormState,
   type BulkState,
@@ -47,6 +48,10 @@ export function MemberForm() {
     createMemberAction,
     null,
   );
+  // Zonder mailadres verdwijnt het adresveld: anders staat er een verplicht
+  // vakje dat je niet kan invullen.
+  const [methode, setMethode] = useState("mail");
+  const zonderMail = methode === "later";
 
   return (
     <form action={action} className="space-y-4">
@@ -56,13 +61,21 @@ export function MemberForm() {
         <Field label="Naam">
           <input className={inputClass} name="full_name" required placeholder="Jan Janssens" />
         </Field>
-        <Field label="E-mailadres" hint="Hiermee logt hij in.">
+        <Field
+          label="E-mailadres"
+          hint={
+            zonderMail
+              ? "Niet nodig — je vult het later aan bij de ledenlijst."
+              : "Hiermee logt hij in."
+          }
+        >
           <input
             className={inputClass}
             type="email"
             name="email"
-            required
-            placeholder="jan@voorbeeld.be"
+            required={!zonderMail}
+            disabled={zonderMail}
+            placeholder={zonderMail ? "later" : "jan@voorbeeld.be"}
           />
         </Field>
         <Field
@@ -89,7 +102,8 @@ export function MemberForm() {
               type="radio"
               name="method"
               value="mail"
-              defaultChecked
+              checked={methode === "mail"}
+              onChange={() => setMethode("mail")}
               className="mt-1 h-4 w-4 accent-[var(--s1)]"
             />
             <span>
@@ -106,6 +120,8 @@ export function MemberForm() {
               type="radio"
               name="method"
               value="wachtwoord"
+              checked={methode === "wachtwoord"}
+              onChange={() => setMethode("wachtwoord")}
               className="mt-1 h-4 w-4 accent-[var(--s1)]"
             />
             <span>
@@ -117,10 +133,107 @@ export function MemberForm() {
               </span>
             </span>
           </label>
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="radio"
+              name="method"
+              value="later"
+              checked={methode === "later"}
+              onChange={() => setMethode("later")}
+              className="mt-1 h-4 w-4 accent-[var(--s1)]"
+            />
+            <span>
+              <span className="block text-sm font-medium text-ink">
+                Nog geen mailadres
+              </span>
+              <span className="block text-xs text-ink-muted">
+                Enkel naam en spelernaam. Hij telt meteen mee voor de pot; het
+                adres en het wachtwoord vul je later aan.
+              </span>
+            </span>
+          </label>
         </div>
       </fieldset>
 
       <Submit label="Lid toevoegen" />
+    </form>
+  );
+}
+
+/**
+ * Voor een lid dat nog geen mailadres had: adres invullen en meteen kiezen wat
+ * er daarna gebeurt. Staat dicht tot je erop klikt, zodat de ledenlijst
+ * overzichtelijk blijft.
+ */
+export function AddEmailButton({
+  id,
+  name,
+  current,
+  pending,
+}: {
+  id: string;
+  name: string;
+  current: string;
+  pending: boolean;
+}) {
+  const [state, action] = useActionState<AdminFormState, FormData>(
+    setMemberEmailAction,
+    null,
+  );
+  const [open, setOpen] = useState(false);
+
+  if (!open) {
+    return (
+      <div>
+        <button
+          onClick={() => setOpen(true)}
+          className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${
+            pending
+              ? "border border-s2/50 bg-s2/12 text-ink"
+              : "border border-line text-ink-2 hover:bg-surface-2"
+          }`}
+        >
+          {pending ? "mailadres toevoegen" : "adres wijzigen"}
+        </button>
+        {state?.success ? (
+          <p className="mt-1.5 max-w-xs rounded-lg bg-good/10 px-2 py-1 text-xs font-semibold text-ink">
+            {state.success}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <form action={action} className="w-full max-w-xs space-y-2">
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="name" value={name} />
+      <input
+        className={inputClass}
+        type="email"
+        name="email"
+        required
+        autoFocus
+        defaultValue={pending ? "" : current}
+        placeholder="jan@voorbeeld.be"
+        aria-label={`E-mailadres van ${name}`}
+      />
+      <select className={inputClass} name="daarna" defaultValue="wachtwoord">
+        <option value="wachtwoord">en zet een startwachtwoord klaar</option>
+        <option value="mail">en stuur de uitnodiging per mail</option>
+        <option value="niets">en verder niets</option>
+      </select>
+      <div className="flex items-center gap-2">
+        <Submit label="Bewaren" />
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="text-xs text-ink-muted underline underline-offset-2"
+        >
+          laat maar
+        </button>
+      </div>
+      <Feedback state={state} />
     </form>
   );
 }

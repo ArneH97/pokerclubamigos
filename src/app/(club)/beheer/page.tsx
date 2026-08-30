@@ -2,6 +2,7 @@ import {
   adminDeleteResultAction,
   deleteMemberAdjustmentAction,
   markMemberPaidAction,
+  toggleAdjustmentPaidAction,
   togglePaidAction,
 } from "./actions";
 import { ShareRowForm } from "./forms";
@@ -69,7 +70,7 @@ export default async function FinancienPage() {
         />
         <StatTile
           label="Al binnen"
-          value={money(num(totals.pot) - num(totals.openstaand))}
+          value={money(Math.max(0, num(totals.pot) - num(totals.openstaand)))}
           detail="Geld dat effectief bij jou zit"
           accent="s3"
         />
@@ -96,8 +97,11 @@ export default async function FinancienPage() {
           <div className="mb-4">
             <Notice>
               Hier neem je de Excel over: typ per Amigo wat er nu voor hem in het
-              potje zit en klik <strong>zet</strong>. Verder loopt het vanzelf —
-              elke ingegeven bijdrage komt erbij, elke activiteit gaat eraf.
+              potje zit en klik <strong>zet</strong>. Dat bedrag telt meteen mee
+              voor de pot, maar komt bij <strong>nog te ontvangen</strong> — heb
+              je het geld al in handen, vink het dan af met{" "}
+              <strong>heb ik ontvangen</strong>. Verder loopt het vanzelf: elke
+              ingegeven bijdrage komt erbij, elke activiteit gaat eraf.
             </Notice>
           </div>
 
@@ -134,10 +138,10 @@ export default async function FinancienPage() {
                     ))}
                   </dl>
 
-                  {num(m.openstaand) > 0 && season ? (
+                  {num(m.openstaand) > 0 ? (
                     <form action={markMemberPaidAction} className="mt-3">
                       <input type="hidden" name="member_id" value={m.member_id} />
-                      <input type="hidden" name="season_id" value={season.id} />
+                      <input type="hidden" name="season_id" value={season?.id ?? ""} />
                       <button className="w-full rounded-full border border-line py-2 text-sm font-medium text-ink-2">
                         Heb ik ontvangen
                       </button>
@@ -195,10 +199,10 @@ export default async function FinancienPage() {
                         {money(m.verbruikt)}
                       </td>
                       <td className="py-3">
-                        {num(m.openstaand) > 0 && season ? (
+                        {num(m.openstaand) > 0 ? (
                           <form action={markMemberPaidAction}>
                             <input type="hidden" name="member_id" value={m.member_id} />
-                            <input type="hidden" name="season_id" value={season.id} />
+                            <input type="hidden" name="season_id" value={season?.id ?? ""} />
                             <button className="whitespace-nowrap rounded-full border border-line px-2.5 py-1 text-xs font-medium text-ink-2 hover:bg-surface-2">
                               heb ik ontvangen
                             </button>
@@ -233,7 +237,7 @@ export default async function FinancienPage() {
                       {a.reason} · {shortDate(a.created_at.slice(0, 10))}
                     </p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-3">
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-x-3 gap-y-1.5">
                     <span
                       className={`text-sm font-semibold tabular ${
                         num(a.amount) < 0 ? "text-critical" : "text-ink"
@@ -242,6 +246,23 @@ export default async function FinancienPage() {
                       {num(a.amount) > 0 ? "+" : ""}
                       {money(a.amount)}
                     </span>
+                    <form action={toggleAdjustmentPaidAction}>
+                      <input type="hidden" name="id" value={a.id} />
+                      <input
+                        type="hidden"
+                        name="is_paid"
+                        value={a.is_paid ? "false" : "true"}
+                      />
+                      <button
+                        className={`whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-medium ${
+                          a.is_paid
+                            ? "border-s3/40 bg-s3/10 text-ink-2"
+                            : "border-s2/40 bg-s2/10 text-ink-2"
+                        }`}
+                      >
+                        {a.is_paid ? "ontvangen · maak open" : "open · vink af"}
+                      </button>
+                    </form>
                     <form action={deleteMemberAdjustmentAction}>
                       <input type="hidden" name="id" value={a.id} />
                       <button className="text-xs text-ink-muted underline underline-offset-2 hover:text-critical">

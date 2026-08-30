@@ -1,4 +1,4 @@
-export type LidStatus = "actief" | "aangemeld" | "uitgenodigd";
+export type LidStatus = "actief" | "aangemeld" | "uitgenodigd" | "geen_mail";
 
 const STATUS: Record<
   LidStatus,
@@ -25,16 +25,28 @@ const STATUS: Record<
     chip: "bg-surface-2",
     uitleg: "De uitnodiging is nog niet geopend.",
   },
+  geen_mail: {
+    label: "Geen mailadres",
+    kort: "geen mail",
+    dot: "bg-s2",
+    chip: "bg-s2/15",
+    uitleg:
+      "Enkel naam en spelernaam bekend. Vul het adres aan om hem binnen te laten.",
+  },
 };
 
 /** Bepaalt in welke fase een lid zit. */
 export function bepaalStatus({
   heeftNickname,
   laatsteAanmelding,
+  mailOntbreekt = false,
 }: {
   heeftNickname: boolean;
   laatsteAanmelding: string | null;
+  mailOntbreekt?: boolean;
 }): LidStatus {
+  // Zonder adres kan hij sowieso niet binnen, wat er verder ook ingevuld is.
+  if (mailOntbreekt) return "geen_mail";
   if (heeftNickname) return "actief";
   if (laatsteAanmelding) return "aangemeld";
   return "uitgenodigd";
